@@ -1,0 +1,16 @@
+services:
+  database:
+    image: postgres:17
+    container_name: googlekeep-teambabilonicos-db
+    restart: always
+    ports:
+      - "8001:5432"
+    environment:
+      - POSTGRES_USER=babilonicos
+      - POSTGRES_PASSWORD=babilonicos123
+      - POSTGRES_DB=GoogleKeepTeamBabilonicos
+    volumes:
+      - googlekeep_babilonicos_data:/var/lib/postgresql/data
+
+volumes:
+  googlekeep_babilonicos_data:

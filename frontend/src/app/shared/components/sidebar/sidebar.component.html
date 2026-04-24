@@ -1,0 +1,54 @@
+<aside class="sidebar">
+  <nav class="sidebar-nav">
+    <!-- Main Menu Items -->
+    <div class="menu-section">
+      <button
+        *ngFor="let item of mainItems"
+        pButton
+        [icon]="item.icon"
+        [label]="item.label"
+        [class.active]="item.active"
+        class="menu-item p-button-text"
+        (click)="onMainItemClick(item)"
+      ></button>
+    </div>
+
+    <!-- Labels Section -->
+    <div class="menu-section labels-section" *ngIf="labelsLoaded">
+      <div class="section-header">ETIQUETAS</div>
+      <button
+        *ngFor="let label of labels"
+        pButton
+        icon="pi pi-tag"
+        [label]="label.name"
+        class="menu-item label-item p-button-text"
+        (click)="onLabelClick(label)"
+      ></button>
+      <button
+        pButton
+        icon="pi pi-plus"
+        label="+ Nueva etiqueta"
+        class="menu-item add-label p-button-text"
+        (click)="addNewLabel()"
+      ></button>
+    </div>
+
+    <!-- Trash -->
+    <div class="menu-section trash-section">
+      <button
+        pButton
+        icon="pi pi-trash"
+        label="Papelera"
+        class="menu-item p-button-text"
+        (click)="onTrashClick()"
+      ></button>
+    </div>
+  </nav>
+
+  <!-- Label Modal -->
+  <app-label-modal
+    *ngIf="showLabelModal"
+    (close)="onLabelModalClose()"
+    (labelCreated)="onLabelCreated()"
+  ></app-label-modal>
+</aside>

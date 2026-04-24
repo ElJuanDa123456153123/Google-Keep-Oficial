@@ -1,0 +1,15 @@
+<div class="color-picker-overlay" (click)="onOutsideClick($event)">
+  <div class="color-picker">
+    <div class="color-header">Color</div>
+
+    <div class="color-grid">
+      <div
+        *ngFor="let color of colors"
+        class="color-item"
+        [ngClass]="color.class"
+        (click)="onColorClick(color.name)"
+        [title]="color.name"
+      ></div>
+    </div>
+  </div>
+</div>

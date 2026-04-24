@@ -1,0 +1,85 @@
+<div
+  class="note-card"
+  [ngClass]="getNoteColorClass()"
+  [class.pinned]="note.is_pinned"
+  (click)="onCardClick()"
+>
+  <!-- Pin Icon -->
+  <div class="pin-icon" *ngIf="note.is_pinned" (click)="onPinClick($event)">
+    <i class="pi pi-pushpin"></i>
+  </div>
+
+  <!-- Image -->
+  <div class="note-image" *ngIf="note.image_url">
+    <img [src]="note.image_url" [alt]="note.title || 'Nota'" />
+  </div>
+
+  <!-- Title -->
+  <h3 class="note-title" *ngIf="note.title">
+    {{ note.title }}
+  </h3>
+
+  <!-- Content (Text) -->
+  <div class="note-content" *ngIf="note.content && !note.checklist_items?.length">
+    <p>{{ note.content }}</p>
+  </div>
+
+  <!-- Checklist -->
+  <div class="note-checklist" *ngIf="note.checklist_items && note.checklist_items.length > 0">
+    <div
+      *ngFor="let item of note.checklist_items"
+      class="checklist-item"
+      [class.completed]="item.is_checked"
+    >
+      <input
+        type="checkbox"
+        class="checklist-checkbox"
+        [checked]="item.is_checked"
+        (change)="onToggleCheckItem(item.id)"
+      />
+      <span class="item-text">{{ item.content }}</span>
+    </div>
+
+    <!-- Completed count -->
+    <div class="completed-count" *ngIf="getCompletedCount() > 0">
+      <span class="count">{{ getCompletedCount() }}</span>
+      <span *ngIf="getCompletedCount() === 1"> elemento completado</span>
+      <span *ngIf="getCompletedCount() > 1"> elementos completados</span>
+      <span *ngIf="getTotalCount() > getCompletedCount()">
+        +{{ getTotalCount() - getCompletedCount() }} más
+      </span>
+    </div>
+  </div>
+
+  <!-- Reminder -->
+  <div class="note-reminder" *ngIf="note.reminder_date">
+    <i class="pi pi-clock"></i>
+    <span>{{ formatReminderDate(note.reminder_date) }}</span>
+  </div>
+
+  <!-- Collaborators -->
+  <div class="note-collaborators" *ngIf="note.collaborators && note.collaborators.length > 0">
+    <p-avatar
+      *ngFor="let collab of note.collaborators.slice(0, 3)"
+      [label]="(collab.user?.name?.substring(0, 2)?.toUpperCase() || '??')"
+      [title]="collab.user?.name || 'Colaborador'"
+      size="normal"
+      shape="circle"
+      styleClass="p-accent"
+    ></p-avatar>
+    <span class="more-collaborators" *ngIf="note.collaborators.length > 3">
+      +{{ note.collaborators.length - 3 }}
+    </span>
+  </div>
+
+  <!-- Hover Toolbar -->
+  <div class="note-toolbar" *ngIf="isHovered">
+    <button pButton icon="pi pi-clock" class="p-button-text p-button-rounded" title="Recordatorio"></button>
+    <button pButton icon="pi pi-user-plus" class="p-button-text p-button-rounded" title="Colaborar"></button>
+    <button pButton icon="pi pi-palette" class="p-button-text p-button-rounded" title="Color"></button>
+    <button pButton icon="pi pi-image" class="p-button-text p-button-rounded" title="Imagen"></button>
+    <button pButton icon="pi pi-ellipsis-v" class="p-button-text p-button-rounded" title="Más" (click)="menu.toggle($event)"></button>
+  </div>
+
+  <p-menu #menu [popup]="true" [model]="menuItems"></p-menu>
+</div>

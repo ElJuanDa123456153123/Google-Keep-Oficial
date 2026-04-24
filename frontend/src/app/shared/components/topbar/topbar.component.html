@@ -1,0 +1,28 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <button pButton icon="pi pi-bars" class="p-button-text p-button-rounded" (click)="toggleSidebar()"></button>
+    <div class="logo">
+      <i class="pi pi-google" style="color: #fbbc04;"></i>
+      <span class="keep-logo">K</span>
+      <span class="keep-text">Keep</span>
+    </div>
+  </div>
+
+  <div class="topbar-center">
+    <input
+      type="text"
+      name="searchQuery"
+      class="search-input"
+      placeholder="Buscar en Keep"
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+    />
+    <i class="pi pi-search search-icon" *ngIf="showSearchIcon"></i>
+  </div>
+
+  <div class="topbar-right">
+    <button pButton icon="pi pi-th-large" class="p-button-text p-button-rounded" title="Vista"></button>
+    <button pButton icon="pi pi-cog" class="p-button-text p-button-rounded" (click)="openSettings()" title="Configuración"></button>
+    <p-avatar label="JD" styleClass="p-accent" size="normal" shape="circle"></p-avatar>
+  </div>
+</header>

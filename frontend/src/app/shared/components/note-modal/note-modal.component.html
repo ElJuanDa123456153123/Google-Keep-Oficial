@@ -1,0 +1,210 @@
+<div class="modal-overlay" (click)="onOutsideClick($event)">
+  <div class="note-modal" [ngClass]="getModalColorClass()">
+    <!-- Header with close and pin buttons -->
+    <div class="modal-header">
+      <button
+        pButton
+        icon="pi pi-times"
+        class="p-button-text p-button-rounded header-btn"
+        (click)="onClose()"
+      ></button>
+      <button
+        pButton
+        icon="pi pi-pushpin"
+        [ngClass]="{'pinned': noteData.is_pinned}"
+        class="p-button-text p-button-rounded header-btn pin-btn"
+        (click)="onTogglePin()"
+      ></button>
+    </div>
+
+    <!-- Title Input -->
+    <input
+      *ngIf="showTitle"
+      type="text"
+      name="title"
+      class="note-title-input"
+      placeholder="Título"
+      [(ngModel)]="noteData.title"
+      (keydown.enter)="$event.preventDefault()"
+    />
+
+    <!-- Image Upload Area -->
+    <div *ngIf="showImageUpload" class="image-upload-area">
+      <input
+        type="file"
+        accept="image/*"
+        (change)="onImageSelected($event)"
+        class="image-input"
+        #imageInput
+      />
+      <div *ngIf="!imagePreview" class="image-upload-placeholder" (click)="imageInput.click()">
+        <i class="pi pi-image"></i>
+        <span>Añadir imagen</span>
+      </div>
+      <div *ngIf="imagePreview" class="image-preview-container">
+        <img [src]="imagePreview" class="image-preview" alt="Preview" />
+        <button
+          pButton
+          icon="pi pi-times"
+          class="p-button-text p-button-rounded remove-image-btn"
+          (click)="removeImage()"
+        ></button>
+      </div>
+    </div>
+
+    <!-- Content Textarea (shown when not in checklist mode) -->
+    <textarea
+      *ngIf="!isChecklistMode"
+      name="content"
+      class="note-content-input"
+      placeholder="Toma una nota..."
+      [(ngModel)]="noteData.content"
+      (focus)="onContentFocus()"
+      rows="4"
+    ></textarea>
+
+    <!-- Checklist Items (shown when in checklist mode) -->
+    <div *ngIf="isChecklistMode" class="checklist-items">
+      <div
+        *ngFor="let item of checklistItems; let i = index"
+        class="checklist-item-row"
+      >
+        <input
+          type="checkbox"
+          [checked]="item.is_checked"
+          (change)="onChecklistItemCheckChange(i, $event.target.checked)"
+          class="checklist-checkbox"
+        />
+        <input
+          type="text"
+          name="checklist-content-{{i}}"
+          class="checklist-item-input"
+          placeholder="Elemento de lista"
+          [(ngModel)]="item.content"
+        />
+        <button
+          *ngIf="checklistItems.length > 1"
+          pButton
+          icon="pi pi-times"
+          class="p-button-text p-button-rounded remove-item-btn"
+          (click)="removeChecklistItem(i)"
+        ></button>
+      </div>
+      <button
+        pButton
+        class="p-button-text add-item-btn"
+        (click)="addChecklistItem()"
+      >
+        + Añadir elemento
+      </button>
+    </div>
+
+    <!-- Bottom Toolbar -->
+    <div class="modal-toolbar">
+      <div class="toolbar-left">
+        <div class="reminder-wrapper">
+          <button
+            pButton
+            icon="pi pi-bell"
+            class="p-button-text p-button-rounded"
+            title="Recordatorio"
+            (click)="onToggleReminder()"
+          ></button>
+          <div *ngIf="showReminder" class="reminder-popup">
+            <div class="popup-header">Recordatorio</div>
+            <div class="popup-option" (click)="setReminder('tomorrow')">
+              <i class="pi pi-clock"></i>
+              <span>Ayer a las 8:00</span>
+            </div>
+            <div class="popup-option" (click)="setReminder('nextweek')">
+              <i class="pi pi-clock"></i>
+              <span>Mañana a las 8:00</span>
+            </div>
+            <div class="popup-option" (click)="setReminder('morning')">
+              <i class="pi pi-calendar"></i>
+              <span>Personalizado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="collaborator-wrapper">
+          <button
+            pButton
+            icon="pi pi-user-plus"
+            class="p-button-text p-button-rounded"
+            title="Colaborar"
+            (click)="onToggleCollaborators()"
+          ></button>
+          <div *ngIf="showCollaborators" class="collaborator-popup">
+            <div class="popup-header">Colaborador</div>
+            <div class="popup-option" (click)="addCollaborator()">
+              <i class="pi pi-user"></i>
+              <span>Invitar a personas</span>
+            </div>
+            <div class="popup-option">
+              <i class="pi pi-users"></i>
+              <span>Ver grupos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="color-picker-wrapper">
+          <button
+            pButton
+            icon="pi pi-palette"
+            class="p-button-text p-button-rounded"
+            title="Color"
+            (click)="onToggleColorPicker($event)"
+          ></button>
+          <div *ngIf="showColorPicker" class="color-picker-popup">
+            <div class="color-header">Color</div>
+            <div class="color-grid">
+              <div
+                *ngFor="let color of colors"
+                class="color-item"
+                [ngClass]="color.class"
+                (click)="onColorSelect(color.name)"
+                [title]="color.name"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image upload disabled until backend endpoint is implemented
+        <button
+          pButton
+          icon="pi pi-image"
+          class="p-button-text p-button-rounded"
+          title="Imagen"
+          (click)="onToggleImageUpload()"
+        ></button>
+        -->
+
+        <button
+          pButton
+          [icon]="isChecklistMode ? 'pi pi-check-square' : 'pi pi-square-o'"
+          class="p-button-text p-button-rounded"
+          [ngClass]="{'active-btn': isChecklistMode}"
+          title="Lista de verificación"
+          (click)="onToggleChecklist()"
+        ></button>
+
+        <button
+          pButton
+          icon="pi pi-ellipsis-v"
+          class="p-button-text p-button-rounded"
+          title="Más"
+        ></button>
+      </div>
+
+      <div class="toolbar-right">
+        <button
+          pButton
+          label="Listo"
+          class="p-button-text done-btn"
+          (click)="onSave()"
+        ></button>
+      </div>
+    </div>
+  </div>
+</div>

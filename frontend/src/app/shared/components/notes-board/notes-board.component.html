@@ -1,0 +1,58 @@
+<div class="notes-board-container">
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <p-progressSpinner></p-progressSpinner>
+    <p>Cargando notas...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error && !loading">
+    <i class="pi pi-exclamation-triangle" style="font-size: 48px; color: #5f6368;"></i>
+    <p>Error al cargar las notas</p>
+    <button pButton label="Reintentar" (click)="loadNotes()"></button>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && !error && notes.length === 0">
+    <i class="pi pi-sticky-note" style="font-size: 64px; color: #dadce0;"></i>
+    <p>No tienes notas aún</p>
+    <p class="hint">Haz clic en el botón + para crear tu primera nota</p>
+  </div>
+
+  <!-- Notes Grid -->
+  <div class="notes-content" *ngIf="!loading && !error">
+    <!-- Pinned Notes Section -->
+    <section class="notes-section" *ngIf="pinnedNotes.length > 0">
+      <h2 class="section-title">FIJADAS</h2>
+      <div class="masonry-grid">
+        <div class="masonry-item" *ngFor="let note of pinnedNotes">
+          <app-note-card
+            [note]="note"
+            (edit)="onEditNote($event)"
+            (delete)="onDeleteNote($event)"
+            (pin)="onPinNote($event)"
+            (archive)="onArchiveNote($event)"
+            (toggleChecklist)="onToggleChecklist($event)"
+          ></app-note-card>
+        </div>
+      </div>
+    </section>
+
+    <!-- Other Notes Section -->
+    <section class="notes-section" *ngIf="otherNotes.length > 0">
+      <h2 class="section-title">NOTAS</h2>
+      <div class="masonry-grid">
+        <div class="masonry-item" *ngFor="let note of otherNotes">
+          <app-note-card
+            [note]="note"
+            (edit)="onEditNote($event)"
+            (delete)="onDeleteNote($event)"
+            (pin)="onPinNote($event)"
+            (archive)="onArchiveNote($event)"
+            (toggleChecklist)="onToggleChecklist($event)"
+          ></app-note-card>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

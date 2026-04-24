@@ -1,0 +1,20 @@
+<!-- Topbar -->
+<app-topbar></app-topbar>
+
+<!-- Sidebar -->
+<app-sidebar (viewChange)="onViewChange($event)"></app-sidebar>
+
+<!-- Main Content -->
+<app-notes-board></app-notes-board>
+
+<!-- FAB -->
+<app-fab (click)="onFabClick()"></app-fab>
+
+<!-- Note Modal -->
+<app-note-modal
+  *ngIf="showNoteModal"
+  (close)="onNoteModalClose()"
+  (noteCreated)="onNoteCreated()"
+></app-note-modal>
+
+<router-outlet />

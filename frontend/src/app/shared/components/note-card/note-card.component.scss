@@ -1,0 +1,168 @@
+.note-card {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+  overflow: hidden;
+
+  &:hover {
+    box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+  }
+
+  &.pinned {
+    border-left: 3px solid #fbbc04;
+  }
+
+  .pin-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: #5f6368;
+    opacity: 0.6;
+
+    i {
+      font-size: 18px;
+    }
+  }
+}
+
+.note-image {
+  width: 100%;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.note-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #202124;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.note-content {
+  font-size: 14px;
+  color: #5f6368;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+
+  p {
+    margin: 0;
+  }
+}
+
+.note-checklist {
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    &.completed {
+      opacity: 0.6;
+
+      .item-text {
+        text-decoration: line-through;
+      }
+    }
+
+    .checklist-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      flex-shrink: 0;
+      accent-color: #fbbc04;
+    }
+
+    .item-text {
+      flex: 1;
+      font-size: 14px;
+      color: #202124;
+      line-height: 1.5;
+    }
+  }
+
+  .completed-count {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #5f6368;
+
+    .count {
+      font-weight: 500;
+    }
+  }
+}
+
+.note-reminder {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #5f6368;
+
+  i {
+    font-size: 16px;
+  }
+}
+
+.note-collaborators {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+
+  .more-collaborators {
+    font-size: 12px;
+    color: #5f6368;
+    margin-left: 4px;
+  }
+}
+
+.note-toolbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: inherit;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+
+  button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+
+    i {
+      font-size: 18px;
+      color: #5f6368;
+    }
+  }
+}

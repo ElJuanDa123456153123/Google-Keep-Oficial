@@ -1,0 +1,91 @@
+@import 'primeicons/primeicons.css';
+
+/* Google Keep Styles */
+:root {
+  --keep-default: #ffffff;
+  --keep-red: #ef9a9a;
+  --keep-orange: #ffcc80;
+  --keep-yellow: #fff59d;
+  --keep-green: #a5d6a7;
+  --keep-teal: #80cbc4;
+  --keep-blue: #90caf9;
+  --keep-darkblue: #9fa8da;
+  --keep-purple: #ce93d8;
+  --keep-pink: #f48fb1;
+  --keep-gray: #f5f5f5;
+  --keep-dark: #202124;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  background-color: #ffffff;
+  color: var(--keep-dark);
+  overflow-x: hidden;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dadce0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #bdc1c6;
+}
+
+/* Note Card Colors */
+.note-bg-default { background-color: var(--keep-default); }
+.note-bg-red { background-color: var(--keep-red); }
+.note-bg-orange { background-color: var(--keep-orange); }
+.note-bg-yellow { background-color: var(--keep-yellow); }
+.note-bg-green { background-color: var(--keep-green); }
+.note-bg-teal { background-color: var(--keep-teal); }
+.note-bg-blue { background-color: var(--keep-blue); }
+.note-bg-darkblue { background-color: var(--keep-darkblue); }
+.note-bg-purple { background-color: var(--keep-purple); }
+.note-bg-pink { background-color: var(--keep-pink); }
+.note-bg-gray { background-color: var(--keep-gray); }
+
+/* Masonry Grid Layout */
+.masonry-grid {
+  column-count: 4;
+  column-gap: 16px;
+}
+
+@media (max-width: 1400px) {
+  .masonry-grid {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 1100px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .masonry-grid {
+    column-count: 1;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 16px;
+}

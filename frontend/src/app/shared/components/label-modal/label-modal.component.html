@@ -1,0 +1,42 @@
+<div class="modal-overlay" (click)="onOutsideClick($event)">
+  <div class="label-modal" (keydown)="onKeydown($event)">
+    <div class="modal-header">
+      <h2>Nueva etiqueta</h2>
+      <button
+        pButton
+        icon="pi pi-times"
+        class="p-button-text p-button-rounded close-btn"
+        (click)="onClose()"
+      ></button>
+    </div>
+
+    <div class="modal-body">
+      <input
+        type="text"
+        name="labelName"
+        class="label-name-input"
+        placeholder="Nombre de la etiqueta"
+        [(ngModel)]="labelName"
+        [disabled]="isCreating"
+        autoFocus
+      />
+    </div>
+
+    <div class="modal-footer">
+      <button
+        pButton
+        label="Cancelar"
+        class="p-button-text"
+        (click)="onClose()"
+        [disabled]="isCreating"
+      ></button>
+      <button
+        pButton
+        label="Crear"
+        class="p-button-text primary-btn"
+        (click)="onSave()"
+        [disabled]="isCreating || !labelName.trim()"
+      ></button>
+    </div>
+  </div>
+</div>
