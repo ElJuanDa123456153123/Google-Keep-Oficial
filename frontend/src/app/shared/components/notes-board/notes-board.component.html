@@ -1,4 +1,13 @@
 <div class="notes-board-container">
+
+  <!-- Modal de edición (se abre al hacer clic en una nota) -->
+  <app-note-modal
+    *ngIf="showEditModal"
+    [editNote]="selectedNote"
+    (close)="onEditModalClose()"
+    (noteCreated)="onEditModalSaved()"
+  ></app-note-modal>
+
   <!-- Loading State -->
   <div class="loading-state" *ngIf="loading">
     <p-progressSpinner></p-progressSpinner>
@@ -21,7 +30,8 @@
 
   <!-- Notes Grid -->
   <div class="notes-content" *ngIf="!loading && !error">
-    <!-- Pinned Notes Section -->
+
+    <!-- Pinned Notes -->
     <section class="notes-section" *ngIf="pinnedNotes.length > 0">
       <h2 class="section-title">FIJADAS</h2>
       <div class="masonry-grid">
@@ -38,9 +48,9 @@
       </div>
     </section>
 
-    <!-- Other Notes Section -->
+    <!-- Other Notes -->
     <section class="notes-section" *ngIf="otherNotes.length > 0">
-      <h2 class="section-title">NOTAS</h2>
+      <h2 class="section-title" *ngIf="pinnedNotes.length > 0">NOTAS</h2>
       <div class="masonry-grid">
         <div class="masonry-item" *ngFor="let note of otherNotes">
           <app-note-card
@@ -54,5 +64,6 @@
         </div>
       </div>
     </section>
+
   </div>
 </div>

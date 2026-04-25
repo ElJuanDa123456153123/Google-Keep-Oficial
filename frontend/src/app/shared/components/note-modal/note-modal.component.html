@@ -1,11 +1,13 @@
-<div class="modal-overlay" (click)="onOutsideClick($event)">
-  <div class="note-modal" [ngClass]="getModalColorClass()">
-    <!-- Header with close and pin buttons -->
+<div class="modal-overlay" [@overlayAnim] (click)="onOutsideClick($event)">
+  <div class="note-modal" [@modalAnim] [ngClass]="getModalColorClass()">
+
+    <!-- Header: X eliminar (solo en modo edición) + pin -->
     <div class="modal-header">
       <button
         pButton
         icon="pi pi-times"
         class="p-button-text p-button-rounded header-btn"
+        title="Cerrar"
         (click)="onClose()"
       ></button>
       <button
@@ -17,9 +19,8 @@
       ></button>
     </div>
 
-    <!-- Title Input -->
+    <!-- Title Input (siempre visible) -->
     <input
-      *ngIf="showTitle"
       type="text"
       name="title"
       class="note-title-input"
@@ -52,18 +53,17 @@
       </div>
     </div>
 
-    <!-- Content Textarea (shown when not in checklist mode) -->
+    <!-- Content Textarea -->
     <textarea
       *ngIf="!isChecklistMode"
       name="content"
       class="note-content-input"
       placeholder="Toma una nota..."
       [(ngModel)]="noteData.content"
-      (focus)="onContentFocus()"
       rows="4"
     ></textarea>
 
-    <!-- Checklist Items (shown when in checklist mode) -->
+    <!-- Checklist Items -->
     <div *ngIf="isChecklistMode" class="checklist-items">
       <div
         *ngFor="let item of checklistItems; let i = index"
@@ -72,7 +72,7 @@
         <input
           type="checkbox"
           [checked]="item.is_checked"
-          (change)="onChecklistItemCheckChange(i, $event.target.checked)"
+          (change)="onChecklistItemCheckChange(i, $any($event.target).checked)"
           class="checklist-checkbox"
         />
         <input
@@ -99,39 +99,58 @@
       </button>
     </div>
 
-    <!-- Bottom Toolbar -->
+    <!-- Bottom Toolbar: orden Checklist, Imagen, Colores, Colaboradores, Recordatorios -->
     <div class="modal-toolbar">
       <div class="toolbar-left">
-        <div class="reminder-wrapper">
+
+        <!-- 1. Checklist -->
+        <button
+          pButton
+          [icon]="isChecklistMode ? 'pi pi-check-square' : 'pi pi-list-check'"
+          class="p-button-text p-button-rounded toolbar-icon-btn"
+          [ngClass]="{'active-btn': isChecklistMode}"
+          title="Lista de verificación"
+          (click)="onToggleChecklist()"
+        ></button>
+
+        <!-- 2. Imagen -->
+        <button
+          pButton
+          icon="pi pi-image"
+          class="p-button-text p-button-rounded toolbar-icon-btn"
+          title="Imagen"
+          (click)="onToggleImageUpload()"
+        ></button>
+
+        <!-- 3. Colores -->
+        <div class="color-picker-wrapper">
           <button
             pButton
-            icon="pi pi-bell"
-            class="p-button-text p-button-rounded"
-            title="Recordatorio"
-            (click)="onToggleReminder()"
+            icon="pi pi-palette"
+            class="p-button-text p-button-rounded toolbar-icon-btn"
+            title="Color de fondo"
+            (click)="onToggleColorPicker($event)"
           ></button>
-          <div *ngIf="showReminder" class="reminder-popup">
-            <div class="popup-header">Recordatorio</div>
-            <div class="popup-option" (click)="setReminder('tomorrow')">
-              <i class="pi pi-clock"></i>
-              <span>Ayer a las 8:00</span>
-            </div>
-            <div class="popup-option" (click)="setReminder('nextweek')">
-              <i class="pi pi-clock"></i>
-              <span>Mañana a las 8:00</span>
-            </div>
-            <div class="popup-option" (click)="setReminder('morning')">
-              <i class="pi pi-calendar"></i>
-              <span>Personalizado</span>
+          <div *ngIf="showColorPicker" class="color-picker-popup">
+            <div class="color-header">Color de fondo</div>
+            <div class="color-grid">
+              <div
+                *ngFor="let color of colors"
+                class="color-item"
+                [ngClass]="color.class"
+                (click)="onColorSelect(color.name)"
+                [title]="color.name"
+              ></div>
             </div>
           </div>
         </div>
 
+        <!-- 4. Colaboradores -->
         <div class="collaborator-wrapper">
           <button
             pButton
             icon="pi pi-user-plus"
-            class="p-button-text p-button-rounded"
+            class="p-button-text p-button-rounded toolbar-icon-btn"
             title="Colaborar"
             (click)="onToggleCollaborators()"
           ></button>
@@ -148,63 +167,51 @@
           </div>
         </div>
 
-        <div class="color-picker-wrapper">
+        <!-- 5. Recordatorios -->
+        <div class="reminder-wrapper">
           <button
             pButton
-            icon="pi pi-palette"
-            class="p-button-text p-button-rounded"
-            title="Color"
-            (click)="onToggleColorPicker($event)"
+            icon="pi pi-bell"
+            class="p-button-text p-button-rounded toolbar-icon-btn"
+            title="Recordatorio"
+            (click)="onToggleReminder()"
           ></button>
-          <div *ngIf="showColorPicker" class="color-picker-popup">
-            <div class="color-header">Color</div>
-            <div class="color-grid">
-              <div
-                *ngFor="let color of colors"
-                class="color-item"
-                [ngClass]="color.class"
-                (click)="onColorSelect(color.name)"
-                [title]="color.name"
-              ></div>
+          <div *ngIf="showReminder" class="reminder-popup">
+            <div class="popup-header">Recordatorio</div>
+            <div class="popup-option" (click)="setReminder('tomorrow')">
+              <i class="pi pi-clock"></i>
+              <span>Mañana a las 8:00</span>
+            </div>
+            <div class="popup-option" (click)="setReminder('nextweek')">
+              <i class="pi pi-calendar"></i>
+              <span>Próxima semana</span>
+            </div>
+            <div class="popup-option" (click)="setReminder('custom')">
+              <i class="pi pi-calendar-plus"></i>
+              <span>Personalizado</span>
             </div>
           </div>
         </div>
 
-        <!-- Image upload disabled until backend endpoint is implemented
-        <button
-          pButton
-          icon="pi pi-image"
-          class="p-button-text p-button-rounded"
-          title="Imagen"
-          (click)="onToggleImageUpload()"
-        ></button>
-        -->
-
-        <button
-          pButton
-          [icon]="isChecklistMode ? 'pi pi-check-square' : 'pi pi-square-o'"
-          class="p-button-text p-button-rounded"
-          [ngClass]="{'active-btn': isChecklistMode}"
-          title="Lista de verificación"
-          (click)="onToggleChecklist()"
-        ></button>
-
-        <button
-          pButton
-          icon="pi pi-ellipsis-v"
-          class="p-button-text p-button-rounded"
-          title="Más"
-        ></button>
       </div>
 
+      <!-- Botones Cancelar y Listo -->
       <div class="toolbar-right">
+        <button
+          pButton
+          label="Cancelar"
+          class="p-button-text cancel-btn"
+          (click)="onClose()"
+        ></button>
         <button
           pButton
           label="Listo"
           class="p-button-text done-btn"
+          [disabled]="isCreating"
           (click)="onSave()"
         ></button>
       </div>
     </div>
+
   </div>
 </div>
