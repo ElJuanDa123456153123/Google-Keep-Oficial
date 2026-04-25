@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { LabelService } from '../../../core/services';
@@ -32,27 +32,27 @@ export class SidebarComponent implements OnInit {
     { icon: 'pi pi-bell', label: 'Recordatorios', active: false }
   ];
 
-  constructor(private labelService: LabelService) {}
+  constructor(
+    private labelService: LabelService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadLabels();
   }
 
   loadLabels() {
-    // TODO: Get user ID from auth service
     this.labelService.getByUserId(1).subscribe({
       next: (labels) => {
-        setTimeout(() => {
-          this.labels = labels || [];
-          this.labelsLoaded = true;
-        }, 0);
+        this.labels = labels || [];
+        this.labelsLoaded = true;
+        this.cdr.detectChanges();   // reemplaza el setTimeout — dispara CD de forma segura
       },
       error: (err) => {
         console.error('Error loading labels:', err);
-        setTimeout(() => {
-          this.labels = [];
-          this.labelsLoaded = true;
-        }, 0);
+        this.labels = [];
+        this.labelsLoaded = true;
+        this.cdr.detectChanges();
       }
     });
   }

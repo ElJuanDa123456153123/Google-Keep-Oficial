@@ -1,24 +1,29 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { NoteService } from '../../../core/services';
 import { Note } from '../../models';
 import { NoteCardComponent } from '../note-card/note-card.component';
+import { NoteModalComponent } from '../note-modal/note-modal.component';
 
 @Component({
   selector: 'app-notes-board',
   standalone: true,
-  imports: [CommonModule, ProgressSpinnerModule, NoteCardComponent],
+  imports: [CommonModule, ProgressSpinnerModule, NoteCardComponent, NoteModalComponent],
   templateUrl: './notes-board.component.html',
   styleUrls: ['./notes-board.component.scss']
 })
-export class NotesBoardComponent implements OnInit, OnDestroy {
+export class NotesBoardComponent implements OnInit {
   notes: Note[] = [];
   pinnedNotes: Note[] = [];
   otherNotes: Note[] = [];
   loading = true;
   error = false;
   currentView: string = 'notas';
+
+  // Modal de edición
+  showEditModal = false;
+  selectedNote: Note | null = null;
 
   constructor(
     private noteService: NoteService,
@@ -29,21 +34,16 @@ export class NotesBoardComponent implements OnInit, OnDestroy {
     this.loadNotes();
   }
 
-  ngOnDestroy() {}
-
   loadNotes() {
     this.loading = true;
     this.error = false;
-    console.log('NotesBoard - Loading notes...');
 
     this.noteService.getAll().subscribe({
       next: (notes) => {
-        console.log('NotesBoard - Notes loaded:', notes.length);
         this.notes = notes;
         this.separateNotes();
         this.loading = false;
         this.cdr.detectChanges();
-        console.log('NotesBoard - Pinned:', this.pinnedNotes.length, 'Other:', this.otherNotes.length);
       },
       error: (err) => {
         console.error('NotesBoard - Error loading notes:', err);
@@ -54,85 +54,78 @@ export class NotesBoardComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Abre el modal de edición con la nota seleccionada
   onEditNote(note: Note) {
-    console.log('Edit note:', note);
-    // TODO: Open edit modal
+    this.selectedNote = note;
+    this.showEditModal = true;
+    this.cdr.detectChanges();
+  }
+
+  onEditModalClose() {
+    this.showEditModal = false;
+    this.selectedNote = null;
+    this.cdr.detectChanges();
+  }
+
+  onEditModalSaved() {
+    this.showEditModal = false;
+    this.selectedNote = null;
+    this.loadNotes();
   }
 
   onDeleteNote(noteId: number) {
     if (confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
       this.noteService.delete(noteId).subscribe({
-        next: () => {
-          this.loadNotes();
-        },
-        error: (err) => {
-          console.error('Error deleting note:', err);
-        }
+        next: () => this.loadNotes(),
+        error: (err) => console.error('Error deleting note:', err)
       });
     }
   }
 
   onPinNote(noteId: number) {
     this.noteService.togglePin(noteId).subscribe({
-      next: () => {
-        this.loadNotes();
-      },
-      error: (err) => {
-        console.error('Error pinning note:', err);
-      }
+      next: () => this.loadNotes(),
+      error: (err) => console.error('Error pinning note:', err)
     });
   }
 
   onArchiveNote(noteId: number) {
     this.noteService.archive(noteId).subscribe({
-      next: () => {
-        this.loadNotes();
-      },
-      error: (err) => {
-        console.error('Error archiving note:', err);
-      }
+      next: () => this.loadNotes(),
+      error: (err) => console.error('Error archiving note:', err)
     });
   }
 
   onToggleChecklist(data: { noteId: number; itemId: number }) {
-    // TODO: Implement toggle checklist
     console.log('Toggle checklist:', data);
   }
 
   setCurrentView(view: string) {
-    console.log('NotesBoard - setCurrentView:', view);
-    console.log('Total notes loaded:', this.notes.length);
     this.currentView = view;
     this.separateNotes();
-    this.cdr.detectChanges(); // Force change detection
-    console.log('Pinned notes:', this.pinnedNotes.length);
-    console.log('Other notes:', this.otherNotes.length);
+    this.cdr.detectChanges();
   }
 
   private getFilteredNotes(): Note[] {
     let filtered = this.notes;
-
-    // Filter by view
     if (this.currentView === 'notas') {
-      filtered = filtered.filter(note => !note.is_archived && !note.is_deleted);
+      filtered = filtered.filter(n => !n.is_archived && !n.is_deleted);
     } else if (this.currentView === 'recordatorios') {
-      filtered = filtered.filter(note => note.reminder_date && !note.is_deleted);
+      filtered = filtered.filter(n => n.reminder_date && !n.is_deleted);
     } else if (this.currentView === 'trash') {
-      filtered = filtered.filter(note => note.is_deleted);
+      filtered = filtered.filter(n => n.is_deleted);
     } else if (this.currentView.startsWith('label:')) {
       const labelName = this.currentView.replace('label:', '');
-      filtered = filtered.filter(note =>
-        !note.is_deleted &&
-        note.labels?.some(label => label.name === labelName)
+      filtered = filtered.filter(n =>
+        !n.is_deleted && n.labels?.some(l => l.name === labelName)
       );
     }
-
     return filtered;
   }
 
   private separateNotes() {
     const filtered = this.getFilteredNotes();
-    this.pinnedNotes = filtered.filter(note => note.is_pinned);
-    this.otherNotes = filtered.filter(note => !note.is_pinned);
+    this.pinnedNotes = filtered.filter(n => n.is_pinned);
+    this.otherNotes  = filtered.filter(n => !n.is_pinned);
   }
 }
