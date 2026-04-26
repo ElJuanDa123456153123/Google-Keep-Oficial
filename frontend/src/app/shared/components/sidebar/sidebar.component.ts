@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Output, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { LabelService } from '../../../core/services';
+import { LabelService, AuthService } from '../../../core/services';
 import { Label } from '../../models';
 import { LabelModalComponent } from '../label-modal/label-modal.component';
 
@@ -20,7 +20,9 @@ export interface SidebarMenuItem {
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent implements OnInit {
+  @Input() isOpen = false;
   @Output() viewChange = new EventEmitter<string>();
+  @Output() close = new EventEmitter<void>();
 
   currentView: string = 'notes';
   labels: Label[] = [];
@@ -34,6 +36,7 @@ export class SidebarComponent implements OnInit {
 
   constructor(
     private labelService: LabelService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -42,7 +45,8 @@ export class SidebarComponent implements OnInit {
   }
 
   loadLabels() {
-    this.labelService.getByUserId(1).subscribe({
+    const userId = this.authService.getCurrentUserId();
+    this.labelService.getByUserId(userId).subscribe({
       next: (labels) => {
         this.labels = labels || [];
         this.labelsLoaded = true;
@@ -87,5 +91,9 @@ export class SidebarComponent implements OnInit {
   onLabelCreated() {
     this.showLabelModal = false;
     this.loadLabels();
+  }
+
+  onClose() {
+    this.close.emit();
   }
 }

@@ -1,3 +1,26 @@
+/* Overlay para móvil */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+.sidebar-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
 .sidebar {
   position: fixed;
   top: 64px;
@@ -8,13 +31,63 @@
   border-right: 1px solid #e0e0e0;
   overflow-y: auto;
   padding: 12px 0;
-  z-index: 900;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+
+  /* Desktop: siempre visible */
+  @media (min-width: 769px) {
+    transform: translateX(0);
+  }
+
+  /* Móvil: oculto por defecto */
+  @media (max-width: 768px) {
+    transform: translateX(-100%);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Móvil: visible cuando tiene la clase 'open' */
+  @media (max-width: 768px) {
+    &.open {
+      transform: translateX(0);
+    }
+  }
+}
+
+/* Botón de cerrar para móvil */
+.sidebar-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #5f6368;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f1f3f4;
+    }
+  }
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-top: 8px;
+
+  @media (max-width: 768px) {
+    padding-top: 40px; /* Espacio para el botón de cerrar */
+  }
 }
 
 .menu-section {

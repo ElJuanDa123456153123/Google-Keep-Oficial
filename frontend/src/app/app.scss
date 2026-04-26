@@ -4,3 +4,26 @@
   height: 100vh;
   overflow: hidden;
 }
+
+/* Overlay para móvil */
+.app-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+.app-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}

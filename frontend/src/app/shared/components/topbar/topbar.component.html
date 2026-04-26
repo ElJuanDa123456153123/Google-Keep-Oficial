@@ -23,6 +23,6 @@
   <div class="topbar-right">
     <button pButton icon="pi pi-th-large" class="p-button-text p-button-rounded" title="Vista"></button>
     <button pButton icon="pi pi-cog" class="p-button-text p-button-rounded" (click)="openSettings()" title="Configuración"></button>
-    <p-avatar label="JD" styleClass="p-accent" size="normal" shape="circle"></p-avatar>
+    <p-avatar [label]="userInitials" class="p-accent" size="normal" shape="circle"></p-avatar>
   </div>
 </header>

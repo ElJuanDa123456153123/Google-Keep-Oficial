@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
+import { AuthService } from '../../../core/services';
 
 @Component({
   selector: 'app-topbar',
@@ -11,8 +12,34 @@ import { AvatarModule } from 'primeng/avatar';
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss']
 })
-export class TopbarComponent {
+export class TopbarComponent implements OnInit {
+  @Output() sidebarToggle = new EventEmitter<void>();
+
   private _searchQuery: string = '';
+  userInitials = 'JD'; // Default
+
+  constructor(private authService: AuthService) {}
+
+  ngOnInit() {
+    this.loadUserInfo();
+  }
+
+  loadUserInfo() {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.userInitials = this.getInitials(user.name);
+    }
+  }
+
+  private getInitials(name: string): string {
+    if (!name) return 'JD';
+    return name
+      .split(' ')
+      .map((word: string) => word[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  }
 
   get searchQuery(): string {
     return this._searchQuery;
@@ -27,8 +54,7 @@ export class TopbarComponent {
   }
 
   toggleSidebar() {
-    // TODO: Implement sidebar toggle
-    console.log('Toggle sidebar');
+    this.sidebarToggle.emit();
   }
 
   onSearch() {
