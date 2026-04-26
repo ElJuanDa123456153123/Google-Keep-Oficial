@@ -101,7 +101,7 @@
       </button>
     </div>
 
-    <!-- Chip de recordatorio activo (visible dentro del modal) -->
+    <!-- Chip de recordatorio activo -->
     <div *ngIf="reminderDate" class="reminder-chip" (click)="onToggleReminder()">
       <i class="pi pi-bell"></i>
       <span>{{ getReminderChipLabel() }}</span>
@@ -112,6 +112,18 @@
       >
         <i class="pi pi-times"></i>
       </button>
+    </div>
+
+    <!-- ✅ NUEVO: chips de colaboradores activos (visibles dentro del modal) -->
+    <div class="collaborator-chips" *ngIf="noteCollaborators.length > 0">
+      <div
+        class="collab-chip"
+        *ngFor="let collab of noteCollaborators"
+        [title]="collab.user?.name || 'Colaborador'"
+      >
+        <span class="chip-avatar">{{ getCollaboratorInitials(collab) }}</span>
+        <span class="chip-name">{{ collab.user?.name || collab.user?.email }}</span>
+      </div>
     </div>
 
     <!-- Toolbar -->
@@ -157,25 +169,22 @@
           </div>
         </div>
 
+        <!-- ✅ ACTUALIZADO: botón colaboradores con badge cuando hay colaboradores -->
         <div class="collaborator-wrapper">
           <button
             pButton
             icon="pi pi-user-plus"
             class="p-button-text p-button-rounded toolbar-icon-btn"
+            [ngClass]="{'active-btn': noteCollaborators.length > 0}"
             title="Colaborar"
             (click)="onToggleCollaborators()"
-          ></button>
-          <div *ngIf="showCollaborators" class="collaborator-popup">
-            <div class="popup-header">Colaborador</div>
-            <div class="popup-option" (click)="addCollaborator()">
-              <i class="pi pi-user"></i>
-              <span>Invitar a personas</span>
-            </div>
-            <div class="popup-option">
-              <i class="pi pi-users"></i>
-              <span>Ver grupos</span>
-            </div>
-          </div>
+          >
+          </button>
+          <!-- Badge con número de colaboradores -->
+          <span
+            class="collab-badge"
+            *ngIf="noteCollaborators.length > 0"
+          >{{ noteCollaborators.length }}</span>
         </div>
 
         <!-- Botón recordatorio — activo si hay fecha -->
@@ -218,3 +227,11 @@
   (reminderCleared)="onReminderCleared()"
   (cancelled)="onReminderCancelled()"
 ></app-reminder-modal>
+
+<!-- ✅ NUEVO: Modal de colaboradores — fuera del note-modal, mismo patrón que reminder-modal -->
+<app-collaborator-modal
+  *ngIf="showCollaborators && editNote?.id"
+  [noteId]="editNote!.id"
+  [initialCollaborators]="noteCollaborators"
+  (closed)="onCollaboratorsClosed($event)"
+></app-collaborator-modal>
