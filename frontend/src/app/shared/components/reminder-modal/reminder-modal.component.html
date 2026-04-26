@@ -12,27 +12,14 @@
       </button>
     </div>
 
-    <!-- Opciones rápidas -->
-    <div class="quick-options">
-      <div class="quick-option" (click)="setQuick('today')">
-        <i class="pi pi-sun"></i>
-        <span>Hoy a las 9 AM</span>
-      </div>
-      <div class="quick-option" (click)="setQuick('tomorrow')">
-        <i class="pi pi-arrow-right"></i>
-        <span>Mañana a las 9 AM</span>
-      </div>
-      <div class="quick-option" (click)="setQuick('nextweek')">
-        <i class="pi pi-calendar"></i>
-        <span>Próxima semana a las 9 AM</span>
-      </div>
-    </div>
+    <!-- Selección de fecha y hora -->
+    <div class="datetime-section">
 
-    <div class="divider"></div>
-
-    <!-- Personalizado -->
-    <div class="custom-section">
-      <div class="custom-title">Personalizado</div>
+      <!-- Visualización literal de la selección -->
+      <div class="selected-display" *ngIf="selectedDate && selectedTime">
+        <i class="pi pi-bell"></i>
+        <span>{{ getSelectedDateTimeLiteral() }}</span>
+      </div>
 
       <!-- Fecha -->
       <div class="field-group">
@@ -41,9 +28,9 @@
           <i class="pi pi-calendar input-icon"></i>
           <input
             type="date"
-            [(ngModel)]="customDate"
-            [min]="today"
-            class="custom-input"
+            [(ngModel)]="selectedDate"
+            [min]="minDate"
+            class="datetime-input"
           />
         </div>
       </div>
@@ -55,14 +42,34 @@
           <i class="pi pi-clock input-icon"></i>
           <input
             type="time"
-            [(ngModel)]="customTime"
-            class="custom-input"
+            [(ngModel)]="selectedTime"
+            class="datetime-input"
           />
         </div>
       </div>
+    </div>
 
-      <!-- Error -->
-      <div class="error-msg" *ngIf="errorMessage">
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Sugerencias Inteligentes -->
+    <div class="suggestions-section" *ngIf="quickSuggestions.length > 0">
+      <div class="suggestions-title">Sugerencias rápidas</div>
+      <div class="suggestions-list">
+        <div
+          *ngFor="let suggestion of quickSuggestions"
+          class="suggestion-item"
+          (click)="onSelectSuggestion(suggestion)"
+        >
+          <i [class]="suggestion.icon"></i>
+          <span>{{ suggestion.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-section" *ngIf="errorMessage">
+      <div class="error-msg">
         <i class="pi pi-exclamation-circle"></i>
         {{ errorMessage }}
       </div>
@@ -82,9 +89,10 @@
                 title="Quitar recordatorio"
                 (click)="onClear()">
         </button>
-        <button pButton label="Listo"
+        <button pButton label="Guardar"
                 class="p-button done-btn"
-                (click)="onSaveCustom()">
+                [disabled]="!selectedDate || !selectedTime"
+                (click)="onSave()">
         </button>
       </div>
     </div>

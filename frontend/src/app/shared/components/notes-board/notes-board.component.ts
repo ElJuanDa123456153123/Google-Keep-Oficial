@@ -23,6 +23,19 @@ export class NotesBoardComponent implements OnInit {
   error = false;
   currentView: string = 'notas';
 
+  // ✅ NUEVO: Agrupación de recordatorios
+  reminderGroups: {
+    today: Note[];
+    tomorrow: Note[];
+    thisWeek: Note[];
+    upcoming: Note[];
+  } = {
+    today: [],
+    tomorrow: [],
+    thisWeek: [],
+    upcoming: []
+  };
+
   // Modal de edición
   showEditModal = false;
   selectedNote: Note | null = null;
@@ -41,18 +54,21 @@ export class NotesBoardComponent implements OnInit {
   }
 
   loadNotes() {
+    console.log('📋 NotesBoard: Iniciando carga de notas...');
     this.loading = true;
     this.error = false;
 
     this.noteService.getAll().subscribe({
       next: (notes) => {
+        console.log('✅ NotesBoard: Notas recibidas:', notes.length, 'notas');
         this.notes = notes;
         this.separateNotes();
         this.loading = false;
         this.cdr.detectChanges();
+        console.log('✅ NotesBoard: Notas cargadas correctamente');
       },
       error: (err) => {
-        console.error('NotesBoard - Error loading notes:', err);
+        console.error('❌ NotesBoard - Error loading notes:', err);
         this.error = true;
         this.loading = false;
         this.cdr.detectChanges();
@@ -74,6 +90,7 @@ export class NotesBoardComponent implements OnInit {
   }
 
   onEditModalSaved() {
+    console.log('✏️ NotesBoard: Modal de edición cerrado - Recargando notas...');
     this.showEditModal = false;
     this.selectedNote = null;
     this.loadNotes();
@@ -150,7 +167,73 @@ export class NotesBoardComponent implements OnInit {
 
   private separateNotes() {
     const filtered = this.getFilteredNotes();
-    this.pinnedNotes = filtered.filter(n => n.is_pinned);
-    this.otherNotes  = filtered.filter(n => !n.is_pinned);
+
+    if (this.currentView === 'recordatorios') {
+      // ✅ NUEVO: Agrupar recordatorios por temporalidad
+      this.groupReminders(filtered);
+      this.pinnedNotes = [];
+      this.otherNotes = [];
+    } else {
+      // Comportamiento normal para otras vistas
+      this.pinnedNotes = filtered.filter(n => n.is_pinned);
+      this.otherNotes  = filtered.filter(n => !n.is_pinned);
+
+      // Resetear grupos de recordatorios
+      this.reminderGroups = {
+        today: [],
+        tomorrow: [],
+        thisWeek: [],
+        upcoming: []
+      };
+    }
+  }
+
+  // ✅ NUEVO: Agrupar recordatorios por temporalidad
+  private groupReminders(notes: Note[]) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const thisWeekEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7);
+
+    // Reset groups
+    this.reminderGroups = {
+      today: [],
+      tomorrow: [],
+      thisWeek: [],
+      upcoming: []
+    };
+
+    notes.forEach(note => {
+      if (!note.reminder_date) return;
+
+      const reminder = new Date(note.reminder_date);
+      const reminderDate = new Date(reminder.getFullYear(), reminder.getMonth(), reminder.getDate());
+
+      if (reminderDate.getTime() === today.getTime()) {
+        this.reminderGroups.today.push(note);
+      } else if (reminderDate.getTime() === tomorrow.getTime()) {
+        this.reminderGroups.tomorrow.push(note);
+      } else if (reminderDate < thisWeekEnd) {
+        this.reminderGroups.thisWeek.push(note);
+      } else {
+        this.reminderGroups.upcoming.push(note);
+      }
+    });
+  }
+
+  // ✅ NUEVO: Verificar si un grupo tiene notas
+  hasNotesInGroup(group: 'today' | 'tomorrow' | 'thisWeek' | 'upcoming'): boolean {
+    return this.reminderGroups[group].length > 0;
+  }
+
+  // ✅ NUEVO: Obtener etiqueta para el grupo
+  getGroupLabel(group: 'today' | 'tomorrow' | 'thisWeek' | 'upcoming'): string {
+    const labels = {
+      today: '📅 Hoy',
+      tomorrow: '📅 Mañana',
+      thisWeek: '📅 Esta semana',
+      upcoming: '📅 Próximos'
+    };
+    return labels[group];
   }
 }

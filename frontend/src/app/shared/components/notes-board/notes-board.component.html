@@ -31,39 +31,123 @@
   <!-- Notes Grid -->
   <div class="notes-content" *ngIf="!loading && !error">
 
-    <!-- Pinned Notes -->
-    <section class="notes-section" *ngIf="pinnedNotes.length > 0">
-      <h2 class="section-title">FIJADAS</h2>
-      <div class="masonry-grid">
-        <div class="masonry-item" *ngFor="let note of pinnedNotes">
-          <app-note-card
-            [note]="note"
-            (edit)="onEditNote($event)"
-            (delete)="onDeleteNote($event)"
-            (pin)="onPinNote($event)"
-            (archive)="onArchiveNote($event)"
-            (toggleChecklist)="onToggleChecklist($event)"
-          ></app-note-card>
-        </div>
-      </div>
-    </section>
+    <!-- ✅ NUEVO: Vista de Recordatorios agrupados -->
+    <div *ngIf="currentView === 'recordatorios'" class="reminders-view">
 
-    <!-- Other Notes -->
-    <section class="notes-section" *ngIf="otherNotes.length > 0">
-      <h2 class="section-title" *ngIf="pinnedNotes.length > 0">NOTAS</h2>
-      <div class="masonry-grid">
-        <div class="masonry-item" *ngFor="let note of otherNotes">
-          <app-note-card
-            [note]="note"
-            (edit)="onEditNote($event)"
-            (delete)="onDeleteNote($event)"
-            (pin)="onPinNote($event)"
-            (archive)="onArchiveNote($event)"
-            (toggleChecklist)="onToggleChecklist($event)"
-          ></app-note-card>
+      <!-- Hoy -->
+      <section class="reminder-group" *ngIf="hasNotesInGroup('today')">
+        <h2 class="section-title reminder-group-title">{{ getGroupLabel('today') }}</h2>
+        <div class="masonry-grid">
+          <div class="masonry-item" *ngFor="let note of reminderGroups.today">
+            <app-note-card
+              [note]="note"
+              (edit)="onEditNote($event)"
+              (delete)="onDeleteNote($event)"
+              (pin)="onPinNote($event)"
+              (archive)="onArchiveNote($event)"
+              (toggleChecklist)="onToggleChecklist($event)"
+            ></app-note-card>
+          </div>
         </div>
+      </section>
+
+      <!-- Mañana -->
+      <section class="reminder-group" *ngIf="hasNotesInGroup('tomorrow')">
+        <h2 class="section-title reminder-group-title">{{ getGroupLabel('tomorrow') }}</h2>
+        <div class="masonry-grid">
+          <div class="masonry-item" *ngFor="let note of reminderGroups.tomorrow">
+            <app-note-card
+              [note]="note"
+              (edit)="onEditNote($event)"
+              (delete)="onDeleteNote($event)"
+              (pin)="onPinNote($event)"
+              (archive)="onArchiveNote($event)"
+              (toggleChecklist)="onToggleChecklist($event)"
+            ></app-note-card>
+          </div>
+        </div>
+      </section>
+
+      <!-- Esta semana -->
+      <section class="reminder-group" *ngIf="hasNotesInGroup('thisWeek')">
+        <h2 class="section-title reminder-group-title">{{ getGroupLabel('thisWeek') }}</h2>
+        <div class="masonry-grid">
+          <div class="masonry-item" *ngFor="let note of reminderGroups.thisWeek">
+            <app-note-card
+              [note]="note"
+              (edit)="onEditNote($event)"
+              (delete)="onDeleteNote($event)"
+              (pin)="onPinNote($event)"
+              (archive)="onArchiveNote($event)"
+              (toggleChecklist)="onToggleChecklist($event)"
+            ></app-note-card>
+          </div>
+        </div>
+      </section>
+
+      <!-- Próximos -->
+      <section class="reminder-group" *ngIf="hasNotesInGroup('upcoming')">
+        <h2 class="section-title reminder-group-title">{{ getGroupLabel('upcoming') }}</h2>
+        <div class="masonry-grid">
+          <div class="masonry-item" *ngFor="let note of reminderGroups.upcoming">
+            <app-note-card
+              [note]="note"
+              (edit)="onEditNote($event)"
+              (delete)="onDeleteNote($event)"
+              (pin)="onPinNote($event)"
+              (archive)="onArchiveNote($event)"
+              (toggleChecklist)="onToggleChecklist($event)"
+            ></app-note-card>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sin recordatorios -->
+      <div class="empty-state" *ngIf="!hasNotesInGroup('today') && !hasNotesInGroup('tomorrow') && !hasNotesInGroup('thisWeek') && !hasNotesInGroup('upcoming')">
+        <i class="pi pi-bell-slash" style="font-size: 48px; color: #dadce0;"></i>
+        <p>No tienes recordatorios</p>
+        <p class="hint">Añade recordatorios a tus notas para verlas aquí</p>
       </div>
-    </section>
+    </div>
+
+    <!-- Vista normal (no recordatorios) -->
+    <div *ngIf="currentView !== 'recordatorios'">
+
+      <!-- Pinned Notes -->
+      <section class="notes-section" *ngIf="pinnedNotes.length > 0">
+        <h2 class="section-title">FIJADAS</h2>
+        <div class="masonry-grid">
+          <div class="masonry-item" *ngFor="let note of pinnedNotes">
+            <app-note-card
+              [note]="note"
+              (edit)="onEditNote($event)"
+              (delete)="onDeleteNote($event)"
+              (pin)="onPinNote($event)"
+              (archive)="onArchiveNote($event)"
+              (toggleChecklist)="onToggleChecklist($event)"
+            ></app-note-card>
+          </div>
+        </div>
+      </section>
+
+      <!-- Other Notes -->
+      <section class="notes-section" *ngIf="otherNotes.length > 0">
+        <h2 class="section-title" *ngIf="pinnedNotes.length > 0">NOTAS</h2>
+        <div class="masonry-grid">
+          <div class="masonry-item" *ngFor="let note of otherNotes">
+            <app-note-card
+              [note]="note"
+              (edit)="onEditNote($event)"
+              (delete)="onDeleteNote($event)"
+              (pin)="onPinNote($event)"
+              (archive)="onArchiveNote($event)"
+              (toggleChecklist)="onToggleChecklist($event)"
+            ></app-note-card>
+          </div>
+        </div>
+      </section>
+
+    </div>
 
   </div>
 

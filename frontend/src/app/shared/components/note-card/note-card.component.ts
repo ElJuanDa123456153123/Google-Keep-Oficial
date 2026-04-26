@@ -24,9 +24,11 @@ export class NoteCardComponent implements OnInit, OnChanges {
   @Output() toggleChecklist = new EventEmitter<{ noteId: number; itemId: number }>();
 
   @HostBinding('class') get hostClasses(): string {
-    const color  = this.note?.color     || 'default';
-    const pinned = this.note?.is_pinned ? 'pinned' : '';
-    return `note-bg-${color} ${pinned}`.trim();
+    const color        = this.note?.color              || 'default';
+    const pinned       = this.note?.is_pinned          ? 'pinned' : '';
+    const hasReminder  = this.note?.reminder_date      ? 'has-reminder' : '';
+    const reminderSoon = this.isReminderSoon()         ? 'reminder-soon' : '';
+    return `note-bg-${color} ${pinned} ${hasReminder} ${reminderSoon}`.trim();
   }
 
   ngOnInit()    {}
@@ -50,33 +52,92 @@ export class NoteCardComponent implements OnInit, OnChanges {
     this.toggleChecklist.emit({ noteId: this.note.id, itemId });
   }
 
+  // ── Recordatorios ───────────────────────────────────────────────
+
   /**
-   * Formatea la fecha del recordatorio de forma legible en español.
-   * Muestra "Hoy" o "Mañana" cuando aplica, seguido de la hora.
+   * Verifica si el recordatorio es en menos de 1 hora
    */
-  formatReminderDate(date: Date | string): string {
+  isReminderSoon(): boolean {
+    if (!this.note?.reminder_date) return false;
+
+    const reminder = new Date(this.note.reminder_date);
+    const now = new Date();
+    const diffMs = reminder.getTime() - now.getTime();
+    const diffMinutes = diffMs / (1000 * 60);
+
+    return diffMinutes > 0 && diffMinutes < 60;
+  }
+
+  /**
+   * Formatea el recordatorio como countdown relativo
+   * Ej: "En 23 minutos", "Mañana a las 9:00 AM", etc.
+   */
+  formatReminderCountdown(date: Date | string): string {
     if (!date) return '';
 
-    const d   = new Date(date);
-    const now  = new Date();
+    const reminder = new Date(date);
+    const now = new Date();
+    const diffMs = reminder.getTime() - now.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
 
-    const today    = new Date(now.getFullYear(),  now.getMonth(),  now.getDate());
-    const tomorrow = new Date(now.getFullYear(),  now.getMonth(),  now.getDate() + 1);
-    const target   = new Date(d.getFullYear(),    d.getMonth(),    d.getDate());
+    // Si ya pasó
+    if (diffMs < 0) {
+      return 'Recordatorio vencido';
+    }
 
-    const timeStr = d.toLocaleTimeString('es-ES', {
-      hour:   '2-digit',
+    // Menos de 1 hora
+    if (diffMinutes < 60) {
+      if (diffMinutes <= 1) return 'En 1 minuto';
+      return `En ${diffMinutes} minutos`;
+    }
+
+    // Menos de 24 horas
+    if (diffHours < 24) {
+      if (diffHours === 1) return 'En 1 hora';
+      return `En ${diffHours} horas`;
+    }
+
+    // Menos de 7 días - mostrar día de la semana
+    if (diffDays < 7) {
+      const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+      const dayName = days[reminder.getDay()];
+      const timeStr = reminder.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const targetDate = new Date(reminder.getFullYear(), reminder.getMonth(), reminder.getDate());
+
+      if (targetDate.getTime() === today.getTime()) {
+        return `Hoy a las ${timeStr}`;
+      }
+      if (targetDate.getTime() === tomorrow.getTime()) {
+        return `Mañana a las ${timeStr}`;
+      }
+
+      return `El ${dayName} a las ${timeStr}`;
+    }
+
+    // Más de 7 días - mostrar fecha completa
+    return reminder.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    }) + ', ' + reminder.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
       minute: '2-digit'
     });
+  }
 
-    if (target.getTime() === today.getTime())    return `Hoy, ${timeStr}`;
-    if (target.getTime() === tomorrow.getTime()) return `Mañana, ${timeStr}`;
-
-    return d.toLocaleDateString('es-ES', {
-      day:   'numeric',
-      month: 'short',
-      year:  'numeric'
-    }) + `, ${timeStr}`;
+  /**
+   * Formatea la fecha del recordatorio de forma legible (versión antigua, mantenida por compatibilidad)
+   */
+  formatReminderDate(date: Date | string): string {
+    return this.formatReminderCountdown(date);
   }
 
   getNoteColorClass(): string {

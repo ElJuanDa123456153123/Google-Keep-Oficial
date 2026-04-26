@@ -211,7 +211,7 @@
           label="Listo"
           class="p-button-text done-btn"
           [disabled]="isCreating"
-          (click)="onSave()"
+          (click)="onSave(); $event.stopPropagation()"
         ></button>
       </div>
     </div>

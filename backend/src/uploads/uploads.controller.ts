@@ -7,12 +7,15 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 const storage = diskStorage({
   destination: (req, file, cb) => {
-    cb(null, './uploads');
+    // ✅ Usar ruta absoluta para evitar errores
+    const uploadsPath = join(process.cwd(), 'uploads');
+    console.log('📁 Uploads path:', uploadsPath);
+    cb(null, uploadsPath);
   },
   filename: (req, file, cb) => {
     // Generate unique filename with original extension

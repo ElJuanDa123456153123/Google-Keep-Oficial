@@ -42,9 +42,9 @@
   </div>
 
   <!-- Reminder -->
-  <div class="note-reminder" *ngIf="note.reminder_date">
-    <i class="pi pi-clock"></i>
-    <span>{{ formatReminderDate(note.reminder_date) }}</span>
+  <div class="note-reminder" [class.soon]="isReminderSoon()" *ngIf="note.reminder_date">
+    <i class="pi pi-bell"></i>
+    <span>{{ formatReminderCountdown(note.reminder_date) }}</span>
   </div>
 
   <!-- Collaborators -->

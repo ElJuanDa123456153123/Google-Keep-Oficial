@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as fs from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -14,8 +15,18 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
 
+  // ✅ Crear carpeta uploads si no existe
+  const uploadsDir = join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    console.log('📁 Creando carpeta uploads...');
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('✅ Carpeta uploads creada:', uploadsDir);
+  } else {
+    console.log('✅ Carpeta uploads ya existe:', uploadsDir);
+  }
+
   // Serve static files from uploads directory
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  app.useStaticAssets(uploadsDir, {
     prefix: '/uploads/',
   });
 
@@ -27,5 +38,7 @@ async function bootstrap() {
 
   var port = 3001;
   await app.listen(port);
+  console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`📁 Uploads directory: ${uploadsDir}`);
 }
 bootstrap();

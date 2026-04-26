@@ -29,6 +29,17 @@
   &.pinned {
     border-left: 3px solid #fbbc04;
   }
+
+  /* ✅ NUEVO: Notas con recordatorio */
+  &.has-reminder {
+    border-left: 4px solid #1a73e8; // Azul Google
+  }
+
+  /* ✅ NUEVO: Recordatorios próximos (< 1 hora) */
+  &.reminder-soon {
+    border-left: 4px solid #fbbc04; // Amarillo advertencia
+    background: linear-gradient(to right, #fff9e6 0%, rgba(255, 249, 230, 0.3) 100%);
+  }
 }
 
 /* ── Contenedor interno ──────────────────────────── */
@@ -143,11 +154,45 @@
 .note-reminder {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  font-size: 12px;
-  color: #5f6368;
-  i { font-size: 14px; }
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(26, 115, 232, 0.08);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a73e8;
+  border: 1px solid rgba(26, 115, 232, 0.2);
+
+  i {
+    font-size: 15px;
+    color: #1a73e8;
+  }
+
+  /* ✅ NUEVO: Recordatorio próximo (< 1 hora) */
+  &.soon {
+    background: rgba(251, 188, 4, 0.15);
+    border-color: rgba(251, 188, 4, 0.4);
+    color: #d93025;
+    font-weight: 600;
+
+    i {
+      color: #d93025;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+  }
+}
+
+/* ✅ NUEVO: Animación de pulso para recordatorios próximos */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.8;
+  }
 }
 
 /* ── Collaborators ───────────────────────────────── */

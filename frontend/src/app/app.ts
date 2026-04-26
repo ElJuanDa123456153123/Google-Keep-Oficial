@@ -32,14 +32,22 @@ export class App {
   }
 
   onNoteModalClose() {
+    console.log('🔒 App: Cerrando modal (close event)');
     this.showNoteModal = false;
   }
 
   onNoteCreated() {
-    this.showNoteModal = false;
-    if (this.notesBoard) {
-      this.notesBoard.loadNotes();
-    }
+    console.log('🎉 App: Nota creada/editada - Recargando...');
+
+    // ✅ Recargar notas primero
+    setTimeout(() => {
+      if (this.notesBoard) {
+        console.log('📋 App: Recargando notas...');
+        this.notesBoard.loadNotes();
+      } else {
+        console.error('❌ App: notesBoard no está disponible');
+      }
+    }, 50);
   }
 
   onViewChange(view: string) {

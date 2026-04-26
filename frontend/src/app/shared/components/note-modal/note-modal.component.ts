@@ -159,10 +159,14 @@ export class NoteModalComponent implements OnInit {
 
     if (this.selectedFile) {
       this.noteService.uploadImage(this.selectedFile).subscribe({
-        next:  (res) => { this.saveNote(res.url); },
+        next:  (res) => {
+          console.log('✅ Imagen subida:', res.url);
+          this.saveNote(res.url);
+        },
         error: (err) => {
-          console.error('Error uploading image:', err);
+          console.error('❌ Error uploading image:', err);
           this.isCreating = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -194,25 +198,52 @@ export class NoteModalComponent implements OnInit {
       noteToSave.content = this.noteData.content || '';
     }
 
+    console.log('💾 Guardando nota:', noteToSave);
+
     if (this.isEditMode && this.editNote) {
+      console.log('✏️ Modo edición - ID:', this.editNote.id);
       this.noteService.update(this.editNote.id, noteToSave).subscribe({
-        next:  () => { this.isCreating = false; this.noteCreated.emit(); },
-        error: (err) => {
-          console.error('Error updating note:', err);
+        next: (response) => {
+          console.log('✅ Nota actualizada:', response);
           this.isCreating = false;
+
+          // ✅ Primero emitir noteCreated para recargar
+          this.noteCreated.emit();
+
+          // ✅ Luego cerrar el modal con un pequeño delay
+          setTimeout(() => {
+            this.close.emit();
+          }, 50);
+
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('❌ Error updating note:', err);
+          this.isCreating = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
+      console.log('➕ Modo creación - Nueva nota');
       this.noteService.create(noteToSave).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('✅ Nota creada:', response);
           this.isCreating = false;
+
+          // ✅ Emitir close primero para cerrar el modal
+          this.close.emit();
+
+          // ✅ Luego emitir noteCreated para recargar notas
           this.noteCreated.emit();
+
+          // Resetear el formulario
           this.resetForm();
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Error creating note:', err);
+          console.error('❌ Error creating note:', err);
           this.isCreating = false;
+          this.cdr.detectChanges();
         }
       });
     }
