@@ -10,6 +10,7 @@ import {
 } from '@angular/animations';
 import { NoteService } from '../../../core/services';
 import { CreateNoteDto, Note } from '../../models';
+import { ReminderModalComponent } from '../reminder-modal/reminder-modal.component';
 
 interface ChecklistItemLocal {
   content: string;
@@ -20,7 +21,7 @@ interface ChecklistItemLocal {
 @Component({
   selector: 'app-note-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule],
+  imports: [CommonModule, FormsModule, ButtonModule, ReminderModalComponent],
   templateUrl: './note-modal.component.html',
   styleUrls: ['./note-modal.component.scss'],
   animations: [
@@ -47,40 +48,42 @@ interface ChecklistItemLocal {
 export class NoteModalComponent implements OnInit {
   @Input() editNote: Note | null = null;
 
-  @Output() close = new EventEmitter<void>();
+  @Output() close       = new EventEmitter<void>();
   @Output() noteCreated = new EventEmitter<void>();
 
   isCreating = false;
   isEditMode = false;
 
-  showColorPicker = false;
-  isChecklistMode = false;
-  showImageUpload = false;
-  showReminder = false;
+  showColorPicker   = false;
+  isChecklistMode   = false;
+  showImageUpload   = false;
   showCollaborators = false;
+  showReminderModal = false;
+
   imagePreview: string | null = null;
-  selectedFile: File | null = null;
+  selectedFile: File | null   = null;
+  reminderDate: Date | null   = null;
 
   colors = [
-    { name: 'default',  class: 'note-bg-default' },
-    { name: 'red',      class: 'note-bg-red' },
-    { name: 'orange',   class: 'note-bg-orange' },
-    { name: 'yellow',   class: 'note-bg-yellow' },
-    { name: 'green',    class: 'note-bg-green' },
-    { name: 'teal',     class: 'note-bg-teal' },
-    { name: 'blue',     class: 'note-bg-blue' },
+    { name: 'default',  class: 'note-bg-default'  },
+    { name: 'red',      class: 'note-bg-red'      },
+    { name: 'orange',   class: 'note-bg-orange'   },
+    { name: 'yellow',   class: 'note-bg-yellow'   },
+    { name: 'green',    class: 'note-bg-green'    },
+    { name: 'teal',     class: 'note-bg-teal'     },
+    { name: 'blue',     class: 'note-bg-blue'     },
     { name: 'darkblue', class: 'note-bg-darkblue' },
-    { name: 'purple',   class: 'note-bg-purple' },
-    { name: 'pink',     class: 'note-bg-pink' },
-    { name: 'gray',     class: 'note-bg-gray' }
+    { name: 'purple',   class: 'note-bg-purple'   },
+    { name: 'pink',     class: 'note-bg-pink'     },
+    { name: 'gray',     class: 'note-bg-gray'     }
   ];
 
   checklistItems: ChecklistItemLocal[] = [];
 
   noteData: CreateNoteDto = {
-    title: '',
-    content: '',
-    color: 'default',
+    title:     '',
+    content:   '',
+    color:     'default',
     is_pinned: false
   };
 
@@ -98,6 +101,11 @@ export class NoteModalComponent implements OnInit {
         color:     this.editNote.color     || 'default',
         is_pinned: this.editNote.is_pinned || false
       };
+
+      if (this.editNote.reminder_date) {
+        this.reminderDate = new Date(this.editNote.reminder_date);
+      }
+
       if (this.editNote.checklist_items?.length) {
         this.isChecklistMode = true;
         this.checklistItems = this.editNote.checklist_items.map(item => ({
@@ -106,8 +114,9 @@ export class NoteModalComponent implements OnInit {
           position:   item.position
         }));
       }
+
       if (this.editNote.image_url) {
-        this.imagePreview = this.editNote.image_url;
+        this.imagePreview    = this.editNote.image_url;
         this.showImageUpload = true;
       }
     }
@@ -121,81 +130,96 @@ export class NoteModalComponent implements OnInit {
     this.close.emit();
   }
 
-    onSave() {
-      const hasContent = this.noteData.title?.trim() || this.noteData.content?.trim();
-      const hasChecklistItems = this.checklistItems.some(item => item.content.trim());
+  onSave() {
+    const hasContent        = this.noteData.title?.trim() || this.noteData.content?.trim();
+    const hasChecklistItems = this.checklistItems.some(item => item.content.trim());
 
-      if (!hasContent && !hasChecklistItems) {
-        this.onClose();
-        return;
-      }
-
-      this.isCreating = true;
-
-      // Si hay archivo nuevo, primero subirlo
-      if (this.selectedFile) {
-        this.noteService.uploadImage(this.selectedFile).subscribe({
-          next: (res) => {
-            this.saveNote(res.url);
-          },
-          error: (err) => {
-            console.error('Error uploading image:', err);
-            this.isCreating = false;
-          }
-        });
-      } else {
-        // Sin imagen nueva, usar la existente o null
-        const existingUrl = this.isEditMode ? (this.imagePreview || undefined) : undefined;
-        this.saveNote(existingUrl);
-      }
+    if (!hasContent && !hasChecklistItems) {
+      this.onClose();
+      return;
     }
 
-    private saveNote(imageUrl?: string) {
-      const noteToSave: CreateNoteDto = {
-        title:     this.noteData.title    || '',
-        color:     this.noteData.color    || 'default',
-        is_pinned: this.noteData.is_pinned ?? false,
-        image_url: imageUrl
-      };
+    this.isCreating = true;
 
-      if (this.isChecklistMode) {
-        noteToSave.checklist_items = this.checklistItems
-          .filter(item => item.content.trim())
-          .map((item, i) => ({
-            content:    item.content,
-            is_checked: item.is_checked,
-            position:   item.position ?? i
-          }));
-      } else {
-        noteToSave.content = this.noteData.content || '';
-      }
-
-      if (this.isEditMode && this.editNote) {
-        this.noteService.update(this.editNote.id, noteToSave).subscribe({
-          next: () => {
-            this.isCreating = false;
-            this.noteCreated.emit();
-          },
-          error: (err) => {
-            console.error('Error updating note:', err);
-            this.isCreating = false;
-          }
-        });
-      } else {
-        this.noteService.create(noteToSave).subscribe({
-          next: () => {
-            this.isCreating = false;
-            this.noteCreated.emit();
-            this.resetForm();
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error('Error creating note:', err);
-            this.isCreating = false;
-          }
-        });
-      }
+    if (this.selectedFile) {
+      this.noteService.uploadImage(this.selectedFile).subscribe({
+        next:  (res) => { this.saveNote(res.url); },
+        error: (err) => {
+          console.error('Error uploading image:', err);
+          this.isCreating = false;
+        }
+      });
+    } else {
+      const existingUrl = this.isEditMode ? (this.imagePreview || undefined) : undefined;
+      this.saveNote(existingUrl);
     }
+  }
+
+  private saveNote(imageUrl?: string) {
+    const noteToSave: CreateNoteDto = {
+      title:     this.noteData.title    || '',
+      color:     this.noteData.color    || 'default',
+      is_pinned: this.noteData.is_pinned ?? false,
+      image_url: imageUrl,
+      // ✅ reminder_date como string ISO — el @Transform del backend lo convierte a Date
+      reminder_date: this.reminderDate
+        ? (this.reminderDate.toISOString() as unknown as Date)
+        : undefined
+    };
+
+    if (this.isChecklistMode) {
+      noteToSave.checklist_items = this.checklistItems
+        .filter(item => item.content.trim())
+        .map((item, i) => ({
+          content:    item.content,
+          is_checked: item.is_checked,
+          position:   item.position ?? i
+        }));
+    } else {
+      noteToSave.content = this.noteData.content || '';
+    }
+
+    if (this.isEditMode && this.editNote) {
+      this.noteService.update(this.editNote.id, noteToSave).subscribe({
+        next:  () => { this.isCreating = false; this.noteCreated.emit(); },
+        error: (err) => {
+          console.error('Error updating note:', err);
+          this.isCreating = false;
+        }
+      });
+    } else {
+      this.noteService.create(noteToSave).subscribe({
+        next: () => {
+          this.isCreating = false;
+          this.noteCreated.emit();
+          this.resetForm();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error creating note:', err);
+          this.isCreating = false;
+        }
+      });
+    }
+  }
+
+  getReminderChipLabel(): string {
+    if (!this.reminderDate) return '';
+    const d        = this.reminderDate;
+    const now      = new Date();
+    const today    = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const target   = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+    const timeStr = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+    if (target.getTime() === today.getTime())    return `Hoy, ${timeStr}`;
+    if (target.getTime() === tomorrow.getTime()) return `Mañana, ${timeStr}`;
+
+    return d.toLocaleDateString('es-ES', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    }) + `, ${timeStr}`;
+  }
 
   onOutsideClick(event: MouseEvent) {
     if (event.target === event.currentTarget) {
@@ -203,60 +227,75 @@ export class NoteModalComponent implements OnInit {
     }
   }
 
+  // ── Color ──────────────────────────────────────────────────────
   onToggleColorPicker(event: Event) {
     event.stopPropagation();
-    this.showColorPicker = !this.showColorPicker;
-    this.showReminder = false;
+    this.showColorPicker   = !this.showColorPicker;
     this.showCollaborators = false;
+    this.showReminderModal = false;
   }
 
   onColorSelect(color: string) {
-    this.noteData.color = color;
+    this.noteData.color  = color;
     this.showColorPicker = false;
     this.cdr.detectChanges();
   }
 
+  // ── Pin ────────────────────────────────────────────────────────
   onTogglePin() {
     this.noteData.is_pinned = !this.noteData.is_pinned;
   }
 
+  // ── Recordatorio ───────────────────────────────────────────────
   onToggleReminder() {
-    this.showReminder = !this.showReminder;
-    this.showColorPicker = false;
+    this.showReminderModal = true;
+    this.showColorPicker   = false;
     this.showCollaborators = false;
   }
 
-  setReminder(type: string) {
-    console.log('Setting reminder:', type);
-    this.showReminder = false;
+  onReminderSaved(date: Date) {
+    this.reminderDate      = date;
+    this.showReminderModal = false;
   }
 
+  onReminderCleared() {
+    this.reminderDate      = null;
+    this.showReminderModal = false;
+  }
+
+  onReminderCancelled() {
+    this.showReminderModal = false;
+  }
+
+  // ── Colaboradores ──────────────────────────────────────────────
   onToggleCollaborators() {
     this.showCollaborators = !this.showCollaborators;
-    this.showColorPicker = false;
-    this.showReminder = false;
+    this.showColorPicker   = false;
+    this.showReminderModal = false;
   }
 
   addCollaborator() {
     this.showCollaborators = false;
   }
 
+  // ── Checklist ──────────────────────────────────────────────────
   onToggleChecklist() {
     this.isChecklistMode = !this.isChecklistMode;
     if (this.isChecklistMode && this.checklistItems.length === 0) {
       this.addChecklistItem();
     }
-    this.showColorPicker = false;
-    this.showReminder = false;
+    this.showColorPicker   = false;
     this.showCollaborators = false;
+    this.showReminderModal = false;
     this.cdr.detectChanges();
   }
 
+  // ── Imagen ─────────────────────────────────────────────────────
   onToggleImageUpload() {
-    this.showImageUpload = !this.showImageUpload;
-    this.showColorPicker = false;
-    this.showReminder = false;
+    this.showImageUpload   = !this.showImageUpload;
+    this.showColorPicker   = false;
     this.showCollaborators = false;
+    this.showReminderModal = false;
     this.cdr.detectChanges();
   }
 
@@ -274,16 +313,16 @@ export class NoteModalComponent implements OnInit {
   }
 
   removeImage() {
-    this.selectedFile = null;
-    this.imagePreview = null;
+    this.selectedFile    = null;
+    this.imagePreview    = null;
     this.showImageUpload = false;
   }
 
   addChecklistItem() {
     this.checklistItems.push({
-      content: '',
+      content:    '',
       is_checked: false,
-      position: this.checklistItems.length
+      position:   this.checklistItems.length
     });
   }
 
@@ -298,13 +337,14 @@ export class NoteModalComponent implements OnInit {
 
   private resetForm() {
     this.noteData = { title: '', content: '', color: 'default', is_pinned: false };
-    this.checklistItems = [];
-    this.isChecklistMode = false;
-    this.showImageUpload = false;
-    this.showColorPicker = false;
-    this.showReminder = false;
+    this.checklistItems    = [];
+    this.isChecklistMode   = false;
+    this.showImageUpload   = false;
+    this.showColorPicker   = false;
     this.showCollaborators = false;
-    this.imagePreview = null;
-    this.selectedFile = null;
+    this.showReminderModal = false;
+    this.reminderDate      = null;
+    this.imagePreview      = null;
+    this.selectedFile      = null;
   }
 }

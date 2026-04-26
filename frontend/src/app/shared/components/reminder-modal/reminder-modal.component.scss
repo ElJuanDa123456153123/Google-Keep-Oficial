@@ -1,0 +1,176 @@
+// frontend/src/app/shared/components/reminder-modal/reminder-modal.component.scss
+
+.reminder-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100; // Por encima del note-modal (z-index 1000)
+}
+
+.reminder-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 340px;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+// ── Header ──────────────────────────────────────
+.reminder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #202124;
+
+  .close-btn {
+    color: #5f6368;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+// ── Opciones rápidas ─────────────────────────────
+.quick-options {
+  padding: 0 8px;
+}
+
+.quick-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #3c4043;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+
+  i {
+    font-size: 1rem;
+    color: #5f6368;
+    width: 18px;
+  }
+
+  &:hover {
+    background: #f1f3f4;
+  }
+}
+
+// ── Divider ──────────────────────────────────────
+.divider {
+  height: 1px;
+  background: #e8eaed;
+  margin: 10px 16px;
+}
+
+// ── Personalizado ────────────────────────────────
+.custom-section {
+  padding: 4px 16px 12px;
+}
+
+.custom-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.field-group {
+  margin-bottom: 12px;
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    color: #5f6368;
+    margin-bottom: 4px;
+  }
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .input-icon {
+    position: absolute;
+    left: 10px;
+    color: #5f6368;
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .custom-input {
+    width: 100%;
+    padding: 8px 10px 8px 34px;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #202124;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: #1a73e8;
+    }
+  }
+}
+
+.error-msg {
+  color: #d93025;
+  font-size: 0.82rem;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  i {
+    font-size: 0.85rem;
+  }
+}
+
+// ── Footer ───────────────────────────────────────
+.reminder-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 14px;
+  border-top: 1px solid #e8eaed;
+
+  .cancel-btn {
+    color: #5f6368;
+    font-size: 0.88rem;
+  }
+
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .clear-btn {
+    color: #d93025;
+  }
+
+  .done-btn {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 20px;
+    font-size: 0.88rem;
+
+    &:hover {
+      background: #1557b0;
+    }
+  }
+}
