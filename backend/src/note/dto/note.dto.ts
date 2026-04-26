@@ -1,40 +1,69 @@
-import { IsBoolean, IsDate, IsNumber, IsOptional, IsString } from "class-validator";
+import {
+  IsBoolean, IsDate, IsNumber,
+  IsOptional, IsString, IsArray, ValidateNested
+} from "class-validator";
+import { Type } from "class-transformer";
+
+export class ChecklistItemEmbeddedDto {
+  @IsOptional()
+  @IsNumber()
+  id?: number;
+
+  @IsOptional()
+  @IsString()
+  content?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  is_checked?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  position?: number;
+}
 
 export class CreateNoteDto {
-    @IsOptional()
-    @IsString()
-    title?: string;
+  @IsOptional()
+  @IsString()
+  title?: string;
 
-    @IsOptional()
-    @IsString()
-    content?: string;
+  @IsOptional()
+  @IsString()
+  content?: string;
 
-    @IsOptional()
-    @IsString()
-    color?: string;
+  @IsOptional()
+  @IsString()
+  color?: string;
 
-    @IsOptional()
-    @IsBoolean()
-    is_pinned?: boolean;
+  @IsOptional()
+  @IsBoolean()
+  is_pinned?: boolean;
 
-    @IsOptional()
-    @IsString()
-    image_url?: string;
+  @IsOptional()
+  @IsString()
+  image_url?: string;
 
-    @IsOptional()
-    @IsDate()
-    reminder_date?: Date;
+  @IsOptional()
+  @IsDate()
+  reminder_date?: Date;
 
-    @IsOptional()
-    @IsBoolean()
-    is_archived?: boolean;
+  @IsOptional()
+  @IsBoolean()
+  is_archived?: boolean;
 
-    @IsOptional()
-    @IsNumber()
-    user_id?: number;
+  @IsOptional()
+  @IsNumber()
+  user_id?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChecklistItemEmbeddedDto)
+  checklist_items?: ChecklistItemEmbeddedDto[];
 }
 
 export class UpdateNoteDto extends CreateNoteDto {
-    @IsNumber()
-    id: number;
+  @IsOptional()
+  @IsNumber()
+  id?: number;
 }

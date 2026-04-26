@@ -97,7 +97,10 @@ export class NotesBoardComponent implements OnInit {
   }
 
   onToggleChecklist(data: { noteId: number; itemId: number }) {
-    console.log('Toggle checklist:', data);
+    this.noteService.toggleChecklistItem(data.itemId).subscribe({
+      next: () => this.loadNotes(),
+      error: (err) => console.error('Error toggling checklist item:', err)
+    });
   }
 
   setCurrentView(view: string) {

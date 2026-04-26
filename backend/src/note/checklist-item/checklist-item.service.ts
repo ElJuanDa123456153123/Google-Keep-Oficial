@@ -6,42 +6,38 @@ import { CreateChecklistItemDto, UpdateChecklistItemDto } from './dto/checklist-
 
 @Injectable()
 export class ChecklistItemService {
-    constructor(
-        @InjectRepository(ChecklistItem)
-        private readonly checklistItemRepository: Repository<ChecklistItem>,
-    ) {}
+  constructor(
+    @InjectRepository(ChecklistItem)
+    private readonly repo: Repository<ChecklistItem>
+  ) {}
 
-    async getByNoteId(noteId: number): Promise<ChecklistItem[]> {
-        return await this.checklistItemRepository.find({
-            where: { note_id: noteId },
-            order: { position: 'ASC' },
-        });
-    }
+  findByNote(noteId: number): Promise<ChecklistItem[]> {
+    return this.repo.find({
+      where: { note_id: noteId },
+      order: { position: 'ASC' }
+    });
+  }
 
-    async save(itemDto: CreateChecklistItemDto): Promise<ChecklistItem> {
-        const item = this.checklistItemRepository.create(itemDto);
-        return await this.checklistItemRepository.save(item);
-    }
+  create(dto: CreateChecklistItemDto): Promise<ChecklistItem> {
+    return this.repo.save(this.repo.create(dto));
+  }
 
-    async update(id: number, itemDto: UpdateChecklistItemDto): Promise<ChecklistItem | null> {
-        await this.checklistItemRepository.update(id, itemDto);
-        return await this.checklistItemRepository.findOne({ where: { id } });
-    }
+  async update(id: number, dto: UpdateChecklistItemDto): Promise<ChecklistItem> {
+    await this.repo.update(id, dto);
+    return this.repo.findOne({ where: { id } }) as Promise<ChecklistItem>;
+  }
 
-    async toggleCheck(id: number): Promise<ChecklistItem | null> {
-        const item = await this.checklistItemRepository.findOne({ where: { id } });
-        if (item) {
-            item.is_checked = !item.is_checked;
-            return await this.checklistItemRepository.save(item);
-        }
-        return null;
-    }
+  async toggleCheck(id: number): Promise<ChecklistItem> {
+    const item = await this.repo.findOne({ where: { id } }) as ChecklistItem;
+    await this.repo.update(id, { is_checked: !item.is_checked });
+    return this.repo.findOne({ where: { id } }) as Promise<ChecklistItem>;
+  }
 
-    async delete(id: number): Promise<void> {
-        await this.checklistItemRepository.delete(id);
-    }
+  async remove(id: number): Promise<void> {
+    await this.repo.delete(id);
+  }
 
-    async deleteByNoteId(noteId: number): Promise<void> {
-        await this.checklistItemRepository.delete({ note_id: noteId });
-    }
+  async removeByNote(noteId: number): Promise<void> {
+    await this.repo.delete({ note_id: noteId });
+  }
 }

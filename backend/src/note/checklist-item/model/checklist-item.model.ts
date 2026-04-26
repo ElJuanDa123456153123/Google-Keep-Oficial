@@ -1,25 +1,27 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  Column, Entity, ManyToOne,
+  PrimaryGeneratedColumn, JoinColumn
+} from "typeorm";
+import { Note } from "../../model/note.model";
 
 @Entity('checklist_items')
 export class ChecklistItem {
-    @PrimaryGeneratedColumn({name: 'item_id'})
-    id: number;
+  @PrimaryGeneratedColumn({ name: 'item_id' })
+  id!: number;
 
-    @Column()
-    note_id: number;
+  @Column()
+  note_id!: number;
 
-    @Column()
-    content: string;
+  @Column({ type: 'text', nullable: true })  // ← temporal
+  content!: string;
 
-    @Column({ default: false })
-    is_checked: boolean;
+  @Column({ default: false })
+  is_checked!: boolean;
 
-    @Column({ default: 0 })
-    position: number;
+  @Column({ default: 0 })
+  position!: number;
 
-    @CreateDateColumn({ name: 'created_at' })
-    created_at: Date;
-
-    @UpdateDateColumn({ name: 'updated_at' })
-    updated_at: Date;
+  @ManyToOne(() => Note, note => note.checklist_items, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'note_id' })
+  note!: Note;
 }
