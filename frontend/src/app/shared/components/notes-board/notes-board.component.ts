@@ -1,12 +1,14 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { NoteService } from '../../../core/services';
+import { SearchService } from '../../../core/services';
 import { Note } from '../../models';
 import { NoteCardComponent } from '../note-card/note-card.component';
 import { NoteModalComponent } from '../note-modal/note-modal.component';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-notes-board',
@@ -15,13 +17,15 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './notes-board.component.html',
   styleUrls: ['./notes-board.component.scss']
 })
-export class NotesBoardComponent implements OnInit {
+export class NotesBoardComponent implements OnInit, OnDestroy {
   notes: Note[] = [];
   pinnedNotes: Note[] = [];
   otherNotes: Note[] = [];
   loading = true;
   error = false;
   currentView: string = 'notas';
+  searchQuery: string = '';
+  private searchSubscription: Subscription = new Subscription();
 
   // ✅ NUEVO: Agrupación de recordatorios
   reminderGroups: {
@@ -46,11 +50,17 @@ export class NotesBoardComponent implements OnInit {
 
   constructor(
     private noteService: NoteService,
+    private searchService: SearchService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.loadNotes();
+    // Suscribirse a los cambios de búsqueda
+    this.searchSubscription = this.searchService.searchQuery$.subscribe(query => {
+      this.searchQuery = query;
+      this.separateNotes();
+    });
   }
 
   loadNotes() {
@@ -150,6 +160,8 @@ export class NotesBoardComponent implements OnInit {
 
   private getFilteredNotes(): Note[] {
     let filtered = this.notes;
+
+    // Filtrar por vista actual
     if (this.currentView === 'notas') {
       filtered = filtered.filter(n => !n.is_archived && !n.is_deleted);
     } else if (this.currentView === 'recordatorios') {
@@ -162,6 +174,35 @@ export class NotesBoardComponent implements OnInit {
         !n.is_deleted && n.labels?.some(l => l.name === labelName)
       );
     }
+
+    // Filtrar por búsqueda si hay una consulta
+    if (this.searchQuery && this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(note => {
+        // Buscar en el título
+        if (note.title && note.title.toLowerCase().includes(query)) {
+          return true;
+        }
+        // Buscar en el contenido
+        if (note.content && note.content.toLowerCase().includes(query)) {
+          return true;
+        }
+        // Buscar en las etiquetas
+        if (note.labels && note.labels.some(label =>
+          label.name && label.name.toLowerCase().includes(query)
+        )) {
+          return true;
+        }
+        // Buscar en los checklist_items
+        if (note.checklist_items && note.checklist_items.some(item =>
+          item.content && item.content.toLowerCase().includes(query)
+        )) {
+          return true;
+        }
+        return false;
+      });
+    }
+
     return filtered;
   }
 
@@ -235,5 +276,12 @@ export class NotesBoardComponent implements OnInit {
       upcoming: '📅 Próximos'
     };
     return labels[group];
+  }
+
+  ngOnDestroy() {
+    // Limpiar la suscripción al destruir el componente
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
   }
 }
