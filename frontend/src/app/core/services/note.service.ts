@@ -44,26 +44,26 @@ export class NoteService {
 
   // Checklist item endpoints
   getChecklistByNoteId(noteId: number): Observable<ChecklistItem[]> {
-    return this.api.post<ChecklistItem[]>(`/note/checklist/getbynote/${noteId}`);
+    return this.api.post<ChecklistItem[]>(`/checklist-item/by-note/${noteId}`);
   }
 
   createChecklistItem(itemDto: CreateChecklistItemDto): Observable<ChecklistItem> {
-    return this.api.post<ChecklistItem>('/note/checklist/save', itemDto);
+    return this.api.post<ChecklistItem>('/checklist-item/save', itemDto);
   }
 
   updateChecklistItem(id: number, itemDto: UpdateChecklistItemDto): Observable<ChecklistItem> {
-    return this.api.post<ChecklistItem>(`/note/checklist/update/${id}`, itemDto);
+    return this.api.post<ChecklistItem>(`/checklist-item/update/${id}`, itemDto);
   }
 
   toggleChecklistItem(id: number): Observable<ChecklistItem> {
-    return this.api.post<ChecklistItem>(`/note/checklist/toggle/${id}`, {});
+    return this.api.post<ChecklistItem>(`/checklist-item/toggle-check/${id}`, {});
   }
 
   deleteChecklistItem(id: number): Observable<void> {
-    return this.api.delete<void>(`/note/checklist/delete/${id}`);
+    return this.api.delete<void>(`/checklist-item/delete/${id}`);
   }
 
   deleteChecklistByNoteId(noteId: number): Observable<void> {
-    return this.api.delete<void>(`/note/checklist/delete-by-note/${noteId}`);
+    return this.api.delete<void>(`/checklist-item/delete-by-note/${noteId}`);
   }
 }

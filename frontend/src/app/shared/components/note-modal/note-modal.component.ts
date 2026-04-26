@@ -45,7 +45,6 @@ interface ChecklistItemLocal {
   ]
 })
 export class NoteModalComponent implements OnInit {
-  /** Si se pasa una nota, el modal abre en modo edición */
   @Input() editNote: Note | null = null;
 
   @Output() close = new EventEmitter<void>();
@@ -132,30 +131,38 @@ export class NoteModalComponent implements OnInit {
     }
 
     this.isCreating = true;
-    const noteToCreate: CreateNoteDto = { ...this.noteData };
 
-    if (this.isChecklistMode && this.checklistItems.length > 0) {
-      noteToCreate.checklist_items = this.checklistItems
+    const noteToSave: CreateNoteDto = {
+      title:     this.noteData.title   || '',
+      color:     this.noteData.color   || 'default',
+      is_pinned: this.noteData.is_pinned ?? false,
+    };
+
+    if (this.isChecklistMode) {
+      noteToSave.checklist_items = this.checklistItems
         .filter(item => item.content.trim())
-        .map(item => ({ content: item.content, position: item.position }));
-      noteToCreate.content = undefined;
+        .map((item, i) => ({
+          content:    item.content,
+          is_checked: item.is_checked,
+          position:   item.position ?? i
+        }));
+    } else {
+      noteToSave.content = this.noteData.content || '';
     }
-    delete noteToCreate.image_url;
 
     if (this.isEditMode && this.editNote) {
-      const noteToUpdate = { ...noteToCreate, id: this.editNote.id };
-      this.noteService.update(this.editNote.id, noteToUpdate).subscribe({
+      this.noteService.update(this.editNote.id, noteToSave).subscribe({
         next: () => {
           this.isCreating = false;
           this.noteCreated.emit();
         },
         error: (err) => {
-          console.error('Error updating note:', err);
+          console.error('Validation errors:', JSON.stringify(err.error?.message));
           this.isCreating = false;
         }
       });
     } else {
-      this.noteService.create(noteToCreate).subscribe({
+      this.noteService.create(noteToSave).subscribe({
         next: () => {
           this.isCreating = false;
           this.noteCreated.emit();
@@ -163,7 +170,7 @@ export class NoteModalComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Error creating note:', err);
+          console.error('Error creating note:', JSON.stringify(err.error?.message));
           this.isCreating = false;
         }
       });
@@ -172,7 +179,7 @@ export class NoteModalComponent implements OnInit {
 
   onOutsideClick(event: MouseEvent) {
     if (event.target === event.currentTarget) {
-      this.onSave();
+      setTimeout(() => this.onSave(), 10);
     }
   }
 
@@ -254,7 +261,8 @@ export class NoteModalComponent implements OnInit {
 
   addChecklistItem() {
     this.checklistItems.push({
-      content: '', is_checked: false,
+      content: '',
+      is_checked: false,
       position: this.checklistItems.length
     });
   }
