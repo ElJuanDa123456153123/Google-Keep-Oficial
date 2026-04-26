@@ -45,4 +45,19 @@ export class NoteController {
   async archive(@Param('id', ParseIntPipe) id: number) {
     return await this.service.archive(id);
   }
+
+  @Post('trash')
+  getDeleted() {
+    return this.service.getDeleted();
+  }
+
+  @Post('restore/:id')
+  async restore(@Param('id', ParseIntPipe) id: number) {
+    return await this.service.restore(id);
+  }
+
+  @Post('permanent-delete/:id')
+  async permanentDelete(@Param('id', ParseIntPipe) id: number) {
+    return await this.service.permanentDelete(id);
+  }
 }

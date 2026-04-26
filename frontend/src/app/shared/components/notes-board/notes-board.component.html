@@ -23,16 +23,23 @@
 
   <!-- Empty State -->
   <div class="empty-state" *ngIf="!loading && !error && notes.length === 0">
-    <i class="pi pi-sticky-note" style="font-size: 64px; color: #dadce0;"></i>
-    <p>No tienes notas aún</p>
-    <p class="hint">Haz clic en el botón + para crear tu primera nota</p>
+    <ng-container *ngIf="isTrashView">
+      <i class="pi pi-trash" style="font-size: 64px; color: #dadce0;"></i>
+      <p>No hay notas en la papelera</p>
+      <p class="hint">Las notas que elimines aparecerán aquí</p>
+    </ng-container>
+    <ng-container *ngIf="!isTrashView">
+      <i class="pi pi-sticky-note" style="font-size: 64px; color: #dadce0;"></i>
+      <p>No tienes notas aún</p>
+      <p class="hint">Haz clic en el botón + para crear tu primera nota</p>
+    </ng-container>
   </div>
 
   <!-- Notes Grid -->
   <div class="notes-content" *ngIf="!loading && !error">
 
     <!-- ✅ NUEVO: Vista de Recordatorios agrupados -->
-    <div *ngIf="currentView === 'recordatorios'" class="reminders-view">
+    <div *ngIf="isRemindersView" class="reminders-view">
 
       <!-- Hoy -->
       <section class="reminder-group" *ngIf="hasNotesInGroup('today')">
@@ -41,10 +48,13 @@
           <div class="masonry-item" *ngFor="let note of reminderGroups.today">
             <app-note-card
               [note]="note"
+              [isTrashView]="isTrashView"
               (edit)="onEditNote($event)"
               (delete)="onDeleteNote($event)"
               (pin)="onPinNote($event)"
               (archive)="onArchiveNote($event)"
+              (restore)="onRestoreNote($event)"
+              (permanentDelete)="onPermanentDeleteNote($event)"
               (toggleChecklist)="onToggleChecklist($event)"
             ></app-note-card>
           </div>
@@ -58,10 +68,13 @@
           <div class="masonry-item" *ngFor="let note of reminderGroups.tomorrow">
             <app-note-card
               [note]="note"
+              [isTrashView]="isTrashView"
               (edit)="onEditNote($event)"
               (delete)="onDeleteNote($event)"
               (pin)="onPinNote($event)"
               (archive)="onArchiveNote($event)"
+              (restore)="onRestoreNote($event)"
+              (permanentDelete)="onPermanentDeleteNote($event)"
               (toggleChecklist)="onToggleChecklist($event)"
             ></app-note-card>
           </div>
@@ -75,10 +88,13 @@
           <div class="masonry-item" *ngFor="let note of reminderGroups.thisWeek">
             <app-note-card
               [note]="note"
+              [isTrashView]="isTrashView"
               (edit)="onEditNote($event)"
               (delete)="onDeleteNote($event)"
               (pin)="onPinNote($event)"
               (archive)="onArchiveNote($event)"
+              (restore)="onRestoreNote($event)"
+              (permanentDelete)="onPermanentDeleteNote($event)"
               (toggleChecklist)="onToggleChecklist($event)"
             ></app-note-card>
           </div>
@@ -92,10 +108,13 @@
           <div class="masonry-item" *ngFor="let note of reminderGroups.upcoming">
             <app-note-card
               [note]="note"
+              [isTrashView]="isTrashView"
               (edit)="onEditNote($event)"
               (delete)="onDeleteNote($event)"
               (pin)="onPinNote($event)"
               (archive)="onArchiveNote($event)"
+              (restore)="onRestoreNote($event)"
+              (permanentDelete)="onPermanentDeleteNote($event)"
               (toggleChecklist)="onToggleChecklist($event)"
             ></app-note-card>
           </div>
@@ -111,19 +130,22 @@
     </div>
 
     <!-- Vista normal (no recordatorios) -->
-    <div *ngIf="currentView !== 'recordatorios'">
+    <div *ngIf="!isRemindersView">
 
-      <!-- Pinned Notes -->
-      <section class="notes-section" *ngIf="pinnedNotes.length > 0">
+      <!-- Pinned Notes (no mostrar en papelera) -->
+      <section class="notes-section" *ngIf="pinnedNotes.length > 0 && !isTrashView">
         <h2 class="section-title">FIJADAS</h2>
         <div class="masonry-grid">
           <div class="masonry-item" *ngFor="let note of pinnedNotes">
             <app-note-card
               [note]="note"
+              [isTrashView]="isTrashView"
               (edit)="onEditNote($event)"
               (delete)="onDeleteNote($event)"
               (pin)="onPinNote($event)"
               (archive)="onArchiveNote($event)"
+              (restore)="onRestoreNote($event)"
+              (permanentDelete)="onPermanentDeleteNote($event)"
               (toggleChecklist)="onToggleChecklist($event)"
             ></app-note-card>
           </div>
@@ -132,15 +154,19 @@
 
       <!-- Other Notes -->
       <section class="notes-section" *ngIf="otherNotes.length > 0">
-        <h2 class="section-title" *ngIf="pinnedNotes.length > 0">NOTAS</h2>
+        <h2 class="section-title" *ngIf="pinnedNotes.length > 0 && !isTrashView">NOTAS</h2>
+        <h2 class="section-title" *ngIf="isTrashView">NOTAS EN LA PAPELERA</h2>
         <div class="masonry-grid">
           <div class="masonry-item" *ngFor="let note of otherNotes">
             <app-note-card
               [note]="note"
+              [isTrashView]="isTrashView"
               (edit)="onEditNote($event)"
               (delete)="onDeleteNote($event)"
               (pin)="onPinNote($event)"
               (archive)="onArchiveNote($event)"
+              (restore)="onRestoreNote($event)"
+              (permanentDelete)="onPermanentDeleteNote($event)"
               (toggleChecklist)="onToggleChecklist($event)"
             ></app-note-card>
           </div>
@@ -179,4 +205,39 @@
 </div>
 
 </p-dialog>
+
+  <!-- Dialog Eliminar Permanentemente Nota -->
+  <p-dialog
+    header="Eliminar Permanentemente"
+    [modal]="true"
+    [(visible)]="showPermanentDeleteModal"
+    [style]="{ width: '28rem', borderRadius: '12px' }"
+    [styleClass]="'permanent-delete-dialog'"
+    [closable]="true"
+    (onHide)="cancelPermanentDelete()">
+
+    <div class="permanent-delete-dialog-content">
+      <div>
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>
+          ¿Estás seguro de eliminar permanentemente
+          <strong>"{{ noteToPermanentDelete?.title || 'esta nota' }}"</strong>?
+        </span>
+      </div>
+      <p class="warning-text">
+        <i class="pi pi-info-circle"></i>
+        Esta acción no se puede deshacer. La nota se eliminará permanentemente.
+      </p>
+    </div>
+    <div class="permanent-delete-dialog-actions">
+      <button class="btn-cancelar" type="button" (click)="cancelPermanentDelete()">
+        Cancelar
+      </button>
+      <button class="btn-eliminar-permanente" type="button" (click)="confirmPermanentDelete()">
+        <i class="pi pi-trash"></i>
+        Eliminar Permanentemente
+      </button>
+    </div>
+
+  </p-dialog>
 </div>

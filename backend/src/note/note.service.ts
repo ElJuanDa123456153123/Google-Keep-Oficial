@@ -112,4 +112,37 @@ export class NoteService {
     await this.noteRepo.update(id, { is_archived: !note.is_archived });
     return this.noteRepo.findOne({ where: { id } }) as Promise<Note>;
   }
+
+  getDeleted(): Promise<Note[]> {
+    return this.noteRepo.find({
+      where: { is_deleted: true },
+      order: { updated_at: 'DESC' }
+    });
+  }
+
+  async restore(id: number): Promise<Note> {
+    await this.noteRepo.update(id, { is_deleted: false });
+    return this.noteRepo.findOne({ where: { id } }) as Promise<Note>;
+  }
+
+  async permanentDelete(id: number): Promise<void> {
+    const note = await this.noteRepo.findOne({ where: { id } });
+
+    if (note?.image_url) {
+      try {
+        const filename = note.image_url.split('/uploads/').pop();
+        if (filename) {
+          const filePath = join(process.cwd(), 'uploads', filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        }
+      } catch (err) {
+        console.error('Error deleting image file:', err);
+      }
+    }
+
+    await this.itemRepo.delete({ note_id: id });
+    await this.noteRepo.delete(id);
+  }
 }

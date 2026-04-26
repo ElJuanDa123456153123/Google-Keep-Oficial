@@ -42,6 +42,18 @@ export class NoteService {
     return this.api.post<Note>(`/note/archive/${id}`, {});
   }
 
+  getDeleted(): Observable<Note[]> {
+    return this.api.post<Note[]>('/note/trash');
+  }
+
+  restore(id: number): Observable<Note> {
+    return this.api.post<Note>(`/note/restore/${id}`, {});
+  }
+
+  permanentDelete(id: number): Observable<void> {
+    return this.api.post<void>(`/note/permanent-delete/${id}`);
+  }
+
   // ── Checklist item endpoints ───────────────────────────────────
   getChecklistByNoteId(noteId: number): Observable<ChecklistItem[]> {
     return this.api.post<ChecklistItem[]>(`/checklist-item/by-note/${noteId}`);

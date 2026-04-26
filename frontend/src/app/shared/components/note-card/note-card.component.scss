@@ -11,6 +11,12 @@
   &:hover {
     box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
     .delete-btn { opacity: 1; }
+    .trash-actions { opacity: 1; }
+  }
+
+  /* Mostrar siempre botones de papelera */
+  .trash-actions {
+    opacity: 1;
   }
 
   /* Colores aplicados al host directamente */
@@ -84,6 +90,55 @@
   color: #5f6368;
   opacity: 0.6;
   i { font-size: 16px; }
+}
+
+/* ── Trash actions buttons ────────────────────────── */
+.trash-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+
+  .restore-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(103, 58, 183, 0.85);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    z-index: 2;
+
+    i { font-size: 13px; color: white; }
+
+    &:hover {
+      background: rgba(103, 58, 183, 1);
+    }
+  }
+
+  .permanent-delete-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(217, 48, 37, 0.85);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    z-index: 2;
+
+    i { font-size: 13px; color: white; }
+
+    &:hover {
+      background: rgba(217, 48, 37, 1);
+    }
+  }
 }
 
 /* ── Image ───────────────────────────────────────── */

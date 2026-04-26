@@ -48,6 +48,19 @@ export class NotesBoardComponent implements OnInit, OnDestroy {
   showDeleteModal = false;
   noteToDelete: Note | null = null;
 
+  // Modal de eliminación permanente
+  showPermanentDeleteModal = false;
+  noteToPermanentDelete: Note | null = null;
+
+  // Getters para evitar problemas de inferencia de tipos en templates
+  get isTrashView(): boolean {
+    return this.currentView === 'trash';
+  }
+
+  get isRemindersView(): boolean {
+    return this.currentView === 'recordatorios';
+  }
+
   constructor(
     private noteService: NoteService,
     private searchService: SearchService,
@@ -68,7 +81,11 @@ export class NotesBoardComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = false;
 
-    this.noteService.getAll().subscribe({
+    const serviceCall = this.currentView === 'trash'
+      ? this.noteService.getDeleted()
+      : this.noteService.getAll();
+
+    serviceCall.subscribe({
       next: (notes) => {
         console.log('✅ NotesBoard: Notas recibidas:', notes.length, 'notas');
         this.notes = notes;
@@ -145,6 +162,38 @@ export class NotesBoardComponent implements OnInit, OnDestroy {
     });
   }
 
+  onRestoreNote(noteId: number) {
+    this.noteService.restore(noteId).subscribe({
+      next: () => this.loadNotes(),
+      error: (err) => console.error('Error restoring note:', err)
+    });
+  }
+
+  onPermanentDeleteNote(noteId: number) {
+    this.noteToPermanentDelete = this.notes.find(n => n.id === noteId) || null;
+    this.showPermanentDeleteModal = true;
+    this.cdr.detectChanges();
+  }
+
+  cancelPermanentDelete() {
+    this.showPermanentDeleteModal = false;
+    this.noteToPermanentDelete = null;
+    this.cdr.detectChanges();
+  }
+
+  confirmPermanentDelete() {
+    if (this.noteToPermanentDelete) {
+      this.noteService.permanentDelete(this.noteToPermanentDelete.id).subscribe({
+        next: () => {
+          this.loadNotes();
+          this.showPermanentDeleteModal = false;
+          this.noteToPermanentDelete = null;
+        },
+        error: (err) => console.error('Error permanently deleting note:', err)
+      });
+    }
+  }
+
   onToggleChecklist(data: { noteId: number; itemId: number }) {
     this.noteService.toggleChecklistItem(data.itemId).subscribe({
       next: () => this.loadNotes(),
@@ -153,8 +202,15 @@ export class NotesBoardComponent implements OnInit, OnDestroy {
   }
 
   setCurrentView(view: string) {
+    const previousView = this.currentView;
     this.currentView = view;
-    this.separateNotes();
+
+    // Recargar notas si cambiamos a/desde la papelera
+    if (view === 'trash' || previousView === 'trash') {
+      this.loadNotes();
+    } else {
+      this.separateNotes();
+    }
     this.cdr.detectChanges();
   }
 
@@ -214,6 +270,18 @@ export class NotesBoardComponent implements OnInit, OnDestroy {
       this.groupReminders(filtered);
       this.pinnedNotes = [];
       this.otherNotes = [];
+    } else if (this.currentView === 'trash') {
+      // En la papelera, mostrar todas las notas sin separar por fijadas
+      this.pinnedNotes = [];
+      this.otherNotes = filtered;
+
+      // Resetear grupos de recordatorios
+      this.reminderGroups = {
+        today: [],
+        tomorrow: [],
+        thisWeek: [],
+        upcoming: []
+      };
     } else {
       // Comportamiento normal para otras vistas
       this.pinnedNotes = filtered.filter(n => n.is_pinned);

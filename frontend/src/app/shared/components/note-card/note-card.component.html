@@ -1,14 +1,29 @@
 <div class="note-card" (click)="onCardClick()">
 
-  <!-- Botón X eliminar -->
-  <button class="delete-btn" title="Eliminar nota" (click)="onDeleteClick($event)">
-    <i class="pi pi-times"></i>
-  </button>
+  <!-- Botones para vista normal -->
+  <ng-container *ngIf="!isTrashView">
+    <!-- Botón X eliminar -->
+    <button class="delete-btn" title="Eliminar nota" (click)="onDeleteClick($event)">
+      <i class="pi pi-times"></i>
+    </button>
 
-  <!-- Pin indicator -->
-  <div class="pin-icon" *ngIf="note.is_pinned" (click)="onPinClick($event)">
-    <i class="pi pi-pushpin"></i>
-  </div>
+    <!-- Pin indicator -->
+    <div class="pin-icon" *ngIf="note.is_pinned" (click)="onPinClick($event)">
+      <i class="pi pi-pushpin"></i>
+    </div>
+  </ng-container>
+
+  <!-- Botones para vista de papelera -->
+  <ng-container *ngIf="isTrashView">
+    <div class="trash-actions">
+      <button class="restore-btn" title="Restaurar nota" (click)="onRestoreClick($event)">
+        <i class="pi pi-refresh"></i>
+      </button>
+      <button class="permanent-delete-btn" title="Eliminar permanentemente" (click)="onPermanentDeleteClick($event)">
+        <i class="pi pi-trash"></i>
+      </button>
+    </div>
+  </ng-container>
 
   <!-- Image -->
   <div class="note-image" *ngIf="note.image_url">

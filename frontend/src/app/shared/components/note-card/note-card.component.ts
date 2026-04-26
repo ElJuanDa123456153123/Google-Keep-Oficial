@@ -17,10 +17,13 @@ import { Note } from '../../models';
 })
 export class NoteCardComponent implements OnInit, OnChanges {
   @Input() note!: Note;
+  @Input() isTrashView = false;
   @Output() edit           = new EventEmitter<Note>();
   @Output() delete         = new EventEmitter<number>();
   @Output() pin            = new EventEmitter<number>();
   @Output() archive        = new EventEmitter<number>();
+  @Output() restore        = new EventEmitter<number>();
+  @Output() permanentDelete = new EventEmitter<number>();
   @Output() toggleChecklist = new EventEmitter<{ noteId: number; itemId: number }>();
 
   @HostBinding('class') get hostClasses(): string {
@@ -50,6 +53,16 @@ export class NoteCardComponent implements OnInit, OnChanges {
 
   onToggleCheckItem(itemId: number) {
     this.toggleChecklist.emit({ noteId: this.note.id, itemId });
+  }
+
+  onRestoreClick(event: Event) {
+    event.stopPropagation();
+    this.restore.emit(this.note.id);
+  }
+
+  onPermanentDeleteClick(event: Event) {
+    event.stopPropagation();
+    this.permanentDelete.emit(this.note.id);
   }
 
   // ── Recordatorios ───────────────────────────────────────────────
