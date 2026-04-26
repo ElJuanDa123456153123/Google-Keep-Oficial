@@ -87,3 +87,91 @@
     column-count: 1;
   }
 }
+// Dialog de Eliminación
+::ng-deep .delete-dialog {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #e8eaed !important;
+
+  .p-dialog-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #e8eaed;
+    background: #fff;
+
+    .p-dialog-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #202124;
+    }
+  }
+
+  .p-dialog-content {
+    padding: 20px 20px 0;
+    background: #fff;
+  }
+}
+
+.delete-dialog-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  i {
+    font-size: 2.2rem;
+    color: #ef4444;
+    flex-shrink: 0;
+  }
+
+  span {
+    font-size: 14px;
+    color: #3c4043;
+    line-height: 1.5;
+  }
+}
+
+.delete-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 0 4px;
+  margin-top: 16px;
+  border-top: 1px solid #e8eaed;
+
+  .btn-cancelar {
+    background: transparent;
+    color: #5f6368;
+    border: 1px solid #dadce0;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #f1f3f4;
+    }
+  }
+
+  .btn-eliminar {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #dc2626;
+    }
+
+    i {
+      font-size: 14px;
+    }
+  }
+}

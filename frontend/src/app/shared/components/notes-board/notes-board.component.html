@@ -66,4 +66,33 @@
     </section>
 
   </div>
+
+  <!-- Dialog Eliminar Nota -->
+<p-dialog
+  header="Eliminar Nota"
+  [modal]="true"
+  [(visible)]="showDeleteModal"
+  [style]="{ width: '26rem', borderRadius: '12px' }"
+  [styleClass]="'delete-dialog'"
+  [closable]="true"
+  (onHide)="cancelDelete()">
+
+  <div class="delete-dialog-content">
+    <i class="pi pi-exclamation-triangle"></i>
+    <span>
+      ¿Estás seguro de eliminar
+      <strong>"{{ noteToDelete?.title || 'esta nota' }}"</strong>?
+    </span>
+  </div>
+<div class="delete-dialog-actions">
+  <button class="btn-cancelar" type="button" (click)="cancelDelete()">
+    Cancelar
+  </button>
+  <button class="btn-eliminar" type="button" (click)="confirmDelete()">
+    <i class="pi pi-trash"></i>
+    Eliminar
+  </button>
+</div>
+
+</p-dialog>
 </div>

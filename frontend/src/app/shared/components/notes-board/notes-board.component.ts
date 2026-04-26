@@ -5,11 +5,13 @@ import { NoteService } from '../../../core/services';
 import { Note } from '../../models';
 import { NoteCardComponent } from '../note-card/note-card.component';
 import { NoteModalComponent } from '../note-modal/note-modal.component';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-notes-board',
   standalone: true,
-  imports: [CommonModule, ProgressSpinnerModule, NoteCardComponent, NoteModalComponent],
+  imports: [CommonModule, ProgressSpinnerModule, NoteCardComponent, NoteModalComponent, DialogModule, ButtonModule],
   templateUrl: './notes-board.component.html',
   styleUrls: ['./notes-board.component.scss']
 })
@@ -24,6 +26,10 @@ export class NotesBoardComponent implements OnInit {
   // Modal de edición
   showEditModal = false;
   selectedNote: Note | null = null;
+
+  // Modal de eliminación
+  showDeleteModal = false;
+  noteToDelete: Note | null = null;
 
   constructor(
     private noteService: NoteService,
@@ -74,9 +80,25 @@ export class NotesBoardComponent implements OnInit {
   }
 
   onDeleteNote(noteId: number) {
-    if (confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
-      this.noteService.delete(noteId).subscribe({
-        next: () => this.loadNotes(),
+    this.noteToDelete = this.notes.find(n => n.id === noteId) || null;
+    this.showDeleteModal = true;
+    this.cdr.detectChanges();
+  }
+
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.noteToDelete = null;
+    this.cdr.detectChanges();
+  }
+
+  confirmDelete() {
+    if (this.noteToDelete) {
+      this.noteService.delete(this.noteToDelete.id).subscribe({
+        next: () => {
+          this.loadNotes();
+          this.showDeleteModal = false;
+          this.noteToDelete = null;
+        },
         error: (err) => console.error('Error deleting note:', err)
       });
     }
