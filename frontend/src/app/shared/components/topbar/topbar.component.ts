@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
+import { SearchService } from '../../../core/services';
 
 @Component({
   selector: 'app-topbar',
@@ -14,12 +15,16 @@ import { AvatarModule } from 'primeng/avatar';
 export class TopbarComponent {
   private _searchQuery: string = '';
 
+  constructor(private searchService: SearchService) {}
+
   get searchQuery(): string {
     return this._searchQuery;
   }
 
   set searchQuery(value: string) {
     this._searchQuery = value || '';
+    // Actualizar la búsqueda en tiempo real
+    this.searchService.setSearchQuery(this._searchQuery);
   }
 
   get showSearchIcon(): boolean {
@@ -32,7 +37,7 @@ export class TopbarComponent {
   }
 
   onSearch() {
-    // TODO: Implement search
+    // La búsqueda ya se actualiza en tiempo real mediante el setter
     console.log('Searching:', this.searchQuery);
   }
 
