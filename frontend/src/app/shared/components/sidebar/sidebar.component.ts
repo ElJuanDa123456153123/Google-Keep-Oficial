@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { LabelService, AuthService } from '../../../core/services';
+import { LabelService } from '../../../core/services';
 import { Label } from '../../models';
 import { LabelModalComponent } from '../label-modal/label-modal.component';
 
@@ -36,7 +36,6 @@ export class SidebarComponent implements OnInit {
 
   constructor(
     private labelService: LabelService,
-    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -45,7 +44,7 @@ export class SidebarComponent implements OnInit {
   }
 
   loadLabels() {
-    const userId = this.authService.getCurrentUserId();
+    const userId = 1; // Hardcodeado hasta implementar auth
     this.labelService.getByUserId(userId).subscribe({
       next: (labels) => {
         this.labels = labels || [];
