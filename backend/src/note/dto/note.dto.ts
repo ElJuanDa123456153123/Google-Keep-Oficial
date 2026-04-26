@@ -2,7 +2,7 @@ import {
   IsBoolean, IsDate, IsNumber,
   IsOptional, IsString, IsArray, ValidateNested
 } from "class-validator";
-import { Type } from "class-transformer";
+import { Type, Transform } from "class-transformer"; // ← agregar Transform
 
 export class ChecklistItemEmbeddedDto {
   @IsOptional()
@@ -44,6 +44,7 @@ export class CreateNoteDto {
   image_url?: string;
 
   @IsOptional()
+  @Transform(({ value }) => value ? new Date(value) : undefined) // ← agregar esta línea
   @IsDate()
   reminder_date?: Date;
 

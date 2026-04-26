@@ -101,6 +101,19 @@
       </button>
     </div>
 
+    <!-- Chip de recordatorio activo (visible dentro del modal) -->
+    <div *ngIf="reminderDate" class="reminder-chip" (click)="onToggleReminder()">
+      <i class="pi pi-bell"></i>
+      <span>{{ getReminderChipLabel() }}</span>
+      <button
+        class="chip-remove"
+        (click)="$event.stopPropagation(); onReminderCleared()"
+        title="Quitar recordatorio"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
     <!-- Toolbar -->
     <div class="modal-toolbar">
       <div class="toolbar-left">
@@ -165,30 +178,15 @@
           </div>
         </div>
 
-        <div class="reminder-wrapper">
-          <button
-            pButton
-            icon="pi pi-bell"
-            class="p-button-text p-button-rounded toolbar-icon-btn"
-            title="Recordatorio"
-            (click)="onToggleReminder()"
-          ></button>
-          <div *ngIf="showReminder" class="reminder-popup">
-            <div class="popup-header">Recordatorio</div>
-            <div class="popup-option" (click)="setReminder('tomorrow')">
-              <i class="pi pi-clock"></i>
-              <span>Mañana a las 8:00</span>
-            </div>
-            <div class="popup-option" (click)="setReminder('nextweek')">
-              <i class="pi pi-calendar"></i>
-              <span>Próxima semana</span>
-            </div>
-            <div class="popup-option" (click)="setReminder('custom')">
-              <i class="pi pi-calendar-plus"></i>
-              <span>Personalizado</span>
-            </div>
-          </div>
-        </div>
+        <!-- Botón recordatorio — activo si hay fecha -->
+        <button
+          pButton
+          icon="pi pi-bell"
+          class="p-button-text p-button-rounded toolbar-icon-btn"
+          [ngClass]="{'active-btn': reminderDate}"
+          title="Recordatorio"
+          (click)="onToggleReminder()"
+        ></button>
 
       </div>
 
@@ -211,3 +209,12 @@
 
   </div>
 </div>
+
+<!-- Modal de recordatorio — fuera del note-modal para evitar z-index issues -->
+<app-reminder-modal
+  *ngIf="showReminderModal"
+  [existingReminder]="reminderDate"
+  (reminderSaved)="onReminderSaved($event)"
+  (reminderCleared)="onReminderCleared()"
+  (cancelled)="onReminderCancelled()"
+></app-reminder-modal>

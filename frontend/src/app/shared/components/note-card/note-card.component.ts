@@ -17,20 +17,19 @@ import { Note } from '../../models';
 })
 export class NoteCardComponent implements OnInit, OnChanges {
   @Input() note!: Note;
-  @Output() edit = new EventEmitter<Note>();
-  @Output() delete = new EventEmitter<number>();
-  @Output() pin = new EventEmitter<number>();
-  @Output() archive = new EventEmitter<number>();
+  @Output() edit           = new EventEmitter<Note>();
+  @Output() delete         = new EventEmitter<number>();
+  @Output() pin            = new EventEmitter<number>();
+  @Output() archive        = new EventEmitter<number>();
   @Output() toggleChecklist = new EventEmitter<{ noteId: number; itemId: number }>();
 
-  // Aplica la clase de color directamente al elemento host <app-note-card>
   @HostBinding('class') get hostClasses(): string {
-    const color = this.note?.color || 'default';
+    const color  = this.note?.color     || 'default';
     const pinned = this.note?.is_pinned ? 'pinned' : '';
     return `note-bg-${color} ${pinned}`.trim();
   }
 
-  ngOnInit() {}
+  ngOnInit()    {}
   ngOnChanges() {}
 
   onCardClick() {
@@ -51,14 +50,35 @@ export class NoteCardComponent implements OnInit, OnChanges {
     this.toggleChecklist.emit({ noteId: this.note.id, itemId });
   }
 
-  formatReminderDate(date: Date): string {
+  /**
+   * Formatea la fecha del recordatorio de forma legible en español.
+   * Muestra "Hoy" o "Mañana" cuando aplica, seguido de la hora.
+   */
+  formatReminderDate(date: Date | string): string {
     if (!date) return '';
-    return new Date(date).toLocaleDateString('es-ES', {
-      weekday: 'short', day: 'numeric', month: 'short'
+
+    const d   = new Date(date);
+    const now  = new Date();
+
+    const today    = new Date(now.getFullYear(),  now.getMonth(),  now.getDate());
+    const tomorrow = new Date(now.getFullYear(),  now.getMonth(),  now.getDate() + 1);
+    const target   = new Date(d.getFullYear(),    d.getMonth(),    d.getDate());
+
+    const timeStr = d.toLocaleTimeString('es-ES', {
+      hour:   '2-digit',
+      minute: '2-digit'
     });
+
+    if (target.getTime() === today.getTime())    return `Hoy, ${timeStr}`;
+    if (target.getTime() === tomorrow.getTime()) return `Mañana, ${timeStr}`;
+
+    return d.toLocaleDateString('es-ES', {
+      day:   'numeric',
+      month: 'short',
+      year:  'numeric'
+    }) + `, ${timeStr}`;
   }
 
-  // Mantenido por compatibilidad, ya no se usa en el template
   getNoteColorClass(): string {
     return `note-bg-${this.note?.color || 'default'}`;
   }

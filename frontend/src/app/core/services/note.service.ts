@@ -9,7 +9,7 @@ import { Note, CreateNoteDto, UpdateNoteDto, ChecklistItem, CreateChecklistItemD
 export class NoteService {
   constructor(private api: ApiService) {}
 
-  // Note endpoints
+  // ── Note endpoints ─────────────────────────────────────────────
   getAll(): Observable<Note[]> {
     return this.api.post<Note[]>('/note/getall');
   }
@@ -42,7 +42,7 @@ export class NoteService {
     return this.api.post<Note>(`/note/archive/${id}`, {});
   }
 
-  // Checklist item endpoints
+  // ── Checklist item endpoints ───────────────────────────────────
   getChecklistByNoteId(noteId: number): Observable<ChecklistItem[]> {
     return this.api.post<ChecklistItem[]>(`/checklist-item/by-note/${noteId}`);
   }
@@ -66,7 +66,7 @@ export class NoteService {
   deleteChecklistByNoteId(noteId: number): Observable<void> {
     return this.api.delete<void>(`/checklist-item/delete-by-note/${noteId}`);
   }
-  
+
   uploadImage(file: File): Observable<{ url: string }> {
     const formData = new FormData();
     formData.append('file', file);
