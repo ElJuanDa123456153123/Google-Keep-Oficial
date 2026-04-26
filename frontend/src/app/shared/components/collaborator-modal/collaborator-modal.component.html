@@ -1,0 +1,81 @@
+<div class="collab-overlay" [@overlayAnim] (click)="onOverlayClick($event)">
+  <div class="collab-modal" [@modalAnim] (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="collab-header">
+      <span class="collab-title">Colaborar</span>
+      <button class="close-btn" (click)="onDone()" title="Cerrar">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <!-- Input de correo -->
+    <div class="collab-section">
+      <p class="section-label">Añadir personas</p>
+
+      <div class="email-input-row">
+        <div class="email-input-wrapper" [class.has-error]="emailError">
+          <i class="pi pi-envelope input-icon"></i>
+          <input
+            type="email"
+            class="email-input"
+            placeholder="Correo"
+            [(ngModel)]="emailInput"
+            (ngModelChange)="onEmailInput()"
+            (keydown.enter)="onAddCollaborator()"
+            autocomplete="off"
+          />
+        </div>
+        <button
+          class="add-btn"
+          [disabled]="isAdding"
+          (click)="onAddCollaborator()"
+          title="Añadir colaborador"
+        >
+          <i class="pi" [ngClass]="isAdding ? 'pi-spin pi-spinner' : 'pi-user-plus'"></i>
+        </button>
+      </div>
+
+      <!-- Mensaje de error -->
+      <p class="error-msg" *ngIf="emailError">
+        <i class="pi pi-exclamation-circle"></i>
+        {{ emailError }}
+      </p>
+
+      <!-- Placeholder cuando no hay colaboradores -->
+      <p class="empty-hint" *ngIf="!collaborators.length && !emailError">
+        Agrega personas para colaborar en esta nota
+      </p>
+    </div>
+
+    <!-- Lista de colaboradores añadidos -->
+    <div class="collab-list" *ngIf="collaborators.length > 0">
+      <div class="collab-item" *ngFor="let collab of collaborators">
+        <div
+          class="collab-avatar"
+          [style.background-color]="getAvatarColor(collab.user)"
+          [title]="collab.user?.name || 'Colaborador'"
+        >
+          {{ getInitials(collab.user) }}
+        </div>
+        <div class="collab-info">
+          <span class="collab-name">{{ collab.user?.name || 'Usuario' }}</span>
+          <span class="collab-email">{{ collab.user?.email || '' }}</span>
+        </div>
+        <button
+          class="remove-btn"
+          (click)="onRemoveCollaborator(collab)"
+          title="Eliminar colaborador"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="collab-footer">
+      <button class="done-btn" (click)="onDone()">Listo</button>
+    </div>
+
+  </div>
+</div>

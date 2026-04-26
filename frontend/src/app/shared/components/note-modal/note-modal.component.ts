@@ -9,8 +9,10 @@ import {
   trigger, style, transition, animate
 } from '@angular/animations';
 import { NoteService } from '../../../core/services';
-import { CreateNoteDto, Note } from '../../models';
+import { CreateNoteDto, Note, Collaborator } from '../../models';
 import { ReminderModalComponent } from '../reminder-modal/reminder-modal.component';
+// ✅ NUEVO: importar el modal de colaboradores
+import { CollaboratorModalComponent } from '../collaborator-modal/collaborator-modal.component';
 
 interface ChecklistItemLocal {
   content: string;
@@ -21,7 +23,13 @@ interface ChecklistItemLocal {
 @Component({
   selector: 'app-note-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, ReminderModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ButtonModule,
+    ReminderModalComponent,
+    CollaboratorModalComponent  // ✅ NUEVO
+  ],
   templateUrl: './note-modal.component.html',
   styleUrls: ['./note-modal.component.scss'],
   animations: [
@@ -57,12 +65,15 @@ export class NoteModalComponent implements OnInit {
   showColorPicker   = false;
   isChecklistMode   = false;
   showImageUpload   = false;
-  showCollaborators = false;
+  showCollaborators = false;  // ✅ Ahora controla el CollaboratorModalComponent
   showReminderModal = false;
 
   imagePreview: string | null = null;
   selectedFile: File | null   = null;
   reminderDate: Date | null   = null;
+
+  // ✅ NUEVO: colaboradores de la nota actual
+  noteCollaborators: Collaborator[] = [];
 
   colors = [
     { name: 'default',  class: 'note-bg-default'  },
@@ -119,6 +130,11 @@ export class NoteModalComponent implements OnInit {
         this.imagePreview    = this.editNote.image_url;
         this.showImageUpload = true;
       }
+
+      // ✅ NUEVO: cargar colaboradores existentes de la nota
+      if (this.editNote.collaborators?.length) {
+        this.noteCollaborators = [...this.editNote.collaborators];
+      }
     }
   }
 
@@ -161,7 +177,6 @@ export class NoteModalComponent implements OnInit {
       color:     this.noteData.color    || 'default',
       is_pinned: this.noteData.is_pinned ?? false,
       image_url: imageUrl,
-      // ✅ reminder_date como string ISO — el @Transform del backend lo convierte a Date
       reminder_date: this.reminderDate
         ? (this.reminderDate.toISOString() as unknown as Date)
         : undefined
@@ -274,8 +289,11 @@ export class NoteModalComponent implements OnInit {
     this.showReminderModal = false;
   }
 
-  addCollaborator() {
+  // ✅ NUEVO: recibe la lista final cuando el modal de colaboradores cierra
+  onCollaboratorsClosed(updatedList: Collaborator[]) {
+    this.noteCollaborators = updatedList;
     this.showCollaborators = false;
+    this.cdr.detectChanges();
   }
 
   // ── Checklist ──────────────────────────────────────────────────
@@ -335,6 +353,13 @@ export class NoteModalComponent implements OnInit {
     this.checklistItems[index].is_checked = checked;
   }
 
+  // ✅ NUEVO: helper para obtener iniciales del colaborador (usado en chips del modal)
+  getCollaboratorInitials(collab: Collaborator): string {
+    const name = collab.user?.name;
+    if (!name) return '?';
+    return name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase();
+  }
+
   private resetForm() {
     this.noteData = { title: '', content: '', color: 'default', is_pinned: false };
     this.checklistItems    = [];
@@ -346,5 +371,6 @@ export class NoteModalComponent implements OnInit {
     this.reminderDate      = null;
     this.imagePreview      = null;
     this.selectedFile      = null;
+    this.noteCollaborators = [];  // ✅ NUEVO
   }
 }
