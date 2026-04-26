@@ -24,6 +24,7 @@ import { NoteModalComponent } from './shared/components/note-modal/note-modal.co
 export class App {
   title = 'Google Keep - Team Babilonicos';
   showNoteModal = false;
+  sidebarOpen = false;
 
   @ViewChild(NotesBoardComponent) notesBoard!: NotesBoardComponent;
 
@@ -55,5 +56,13 @@ export class App {
     if (this.notesBoard) {
       this.notesBoard.setCurrentView(view);
     }
+    // Cerrar sidebar en móvil después de seleccionar una opción
+    if (window.innerWidth <= 768) {
+      this.sidebarOpen = false;
+    }
+  }
+
+  onSidebarToggle() {
+    this.sidebarOpen = !this.sidebarOpen;
   }
 }

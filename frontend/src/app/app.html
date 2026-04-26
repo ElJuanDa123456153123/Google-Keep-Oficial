@@ -1,8 +1,13 @@
 <!-- Topbar -->
-<app-topbar></app-topbar>
+<app-topbar (sidebarToggle)="onSidebarToggle()"></app-topbar>
+
+<!-- Overlay para móvil (solo se muestra cuando sidebar está abierto) -->
+@if (sidebarOpen) {
+  <div class="app-overlay" (click)="sidebarOpen = false"></div>
+}
 
 <!-- Sidebar -->
-<app-sidebar (viewChange)="onViewChange($event)"></app-sidebar>
+<app-sidebar [isOpen]="sidebarOpen" (viewChange)="onViewChange($event)" (close)="sidebarOpen = false"></app-sidebar>
 
 <!-- Main Content -->
 <app-notes-board></app-notes-board>
@@ -11,10 +16,11 @@
 <app-fab (click)="onFabClick()"></app-fab>
 
 <!-- Note Modal -->
-<app-note-modal
-  *ngIf="showNoteModal"
-  (close)="onNoteModalClose()"
-  (noteCreated)="onNoteCreated()"
-></app-note-modal>
+@if (showNoteModal) {
+  <app-note-modal
+    (close)="onNoteModalClose()"
+    (noteCreated)="onNoteCreated()"
+  ></app-note-modal>
+}
 
 <router-outlet />
