@@ -121,61 +121,81 @@ export class NoteModalComponent implements OnInit {
     this.close.emit();
   }
 
-  onSave() {
-    const hasContent = this.noteData.title?.trim() || this.noteData.content?.trim();
-    const hasChecklistItems = this.checklistItems.some(item => item.content.trim());
+    onSave() {
+      const hasContent = this.noteData.title?.trim() || this.noteData.content?.trim();
+      const hasChecklistItems = this.checklistItems.some(item => item.content.trim());
 
-    if (!hasContent && !hasChecklistItems) {
-      this.onClose();
-      return;
+      if (!hasContent && !hasChecklistItems) {
+        this.onClose();
+        return;
+      }
+
+      this.isCreating = true;
+
+      // Si hay archivo nuevo, primero subirlo
+      if (this.selectedFile) {
+        this.noteService.uploadImage(this.selectedFile).subscribe({
+          next: (res) => {
+            this.saveNote(res.url);
+          },
+          error: (err) => {
+            console.error('Error uploading image:', err);
+            this.isCreating = false;
+          }
+        });
+      } else {
+        // Sin imagen nueva, usar la existente o null
+        const existingUrl = this.isEditMode ? (this.imagePreview || undefined) : undefined;
+        this.saveNote(existingUrl);
+      }
     }
 
-    this.isCreating = true;
+    private saveNote(imageUrl?: string) {
+      const noteToSave: CreateNoteDto = {
+        title:     this.noteData.title    || '',
+        color:     this.noteData.color    || 'default',
+        is_pinned: this.noteData.is_pinned ?? false,
+        image_url: imageUrl
+      };
 
-    const noteToSave: CreateNoteDto = {
-      title:     this.noteData.title   || '',
-      color:     this.noteData.color   || 'default',
-      is_pinned: this.noteData.is_pinned ?? false,
-    };
+      if (this.isChecklistMode) {
+        noteToSave.checklist_items = this.checklistItems
+          .filter(item => item.content.trim())
+          .map((item, i) => ({
+            content:    item.content,
+            is_checked: item.is_checked,
+            position:   item.position ?? i
+          }));
+      } else {
+        noteToSave.content = this.noteData.content || '';
+      }
 
-    if (this.isChecklistMode) {
-      noteToSave.checklist_items = this.checklistItems
-        .filter(item => item.content.trim())
-        .map((item, i) => ({
-          content:    item.content,
-          is_checked: item.is_checked,
-          position:   item.position ?? i
-        }));
-    } else {
-      noteToSave.content = this.noteData.content || '';
+      if (this.isEditMode && this.editNote) {
+        this.noteService.update(this.editNote.id, noteToSave).subscribe({
+          next: () => {
+            this.isCreating = false;
+            this.noteCreated.emit();
+          },
+          error: (err) => {
+            console.error('Error updating note:', err);
+            this.isCreating = false;
+          }
+        });
+      } else {
+        this.noteService.create(noteToSave).subscribe({
+          next: () => {
+            this.isCreating = false;
+            this.noteCreated.emit();
+            this.resetForm();
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Error creating note:', err);
+            this.isCreating = false;
+          }
+        });
+      }
     }
-
-    if (this.isEditMode && this.editNote) {
-      this.noteService.update(this.editNote.id, noteToSave).subscribe({
-        next: () => {
-          this.isCreating = false;
-          this.noteCreated.emit();
-        },
-        error: (err) => {
-          console.error('Validation errors:', JSON.stringify(err.error?.message));
-          this.isCreating = false;
-        }
-      });
-    } else {
-      this.noteService.create(noteToSave).subscribe({
-        next: () => {
-          this.isCreating = false;
-          this.noteCreated.emit();
-          this.resetForm();
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Error creating note:', JSON.stringify(err.error?.message));
-          this.isCreating = false;
-        }
-      });
-    }
-  }
 
   onOutsideClick(event: MouseEvent) {
     if (event.target === event.currentTarget) {

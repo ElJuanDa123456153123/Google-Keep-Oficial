@@ -58,4 +58,5 @@ export interface UpdateNoteDto {
   image_url?: string;
   reminder_date?: Date;
   is_archived?: boolean;
+  checklist_items?: CreateChecklistItemDto[];
 }

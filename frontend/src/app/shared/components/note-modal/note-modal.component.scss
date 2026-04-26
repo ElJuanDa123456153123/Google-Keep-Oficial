@@ -236,26 +236,43 @@
 /* ── Toolbar right buttons ───────────────────────── */
 .toolbar-right {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   align-items: center;
 }
 
 .cancel-btn {
-  color: #5f6368;
-  font-weight: 500;
-  background-color: transparent;
-  &:hover { background-color: rgba(0,0,0,0.06) !important; color: #202124; }
+  color: #5f6368 !important;
+  font-weight: 500 !important;
+  background-color: transparent !important;
+  border: 1px solid #dadce0 !important;
+  border-radius: 6px !important;
+  padding: 6px 16px !important;
+  font-size: 14px !important;
+  transition: background-color 0.2s, color 0.2s !important;
+
+  &:hover {
+    background-color: #f1f3f4 !important;
+    color: #202124 !important;
+  }
 }
 
 .done-btn {
-  color: #000;
-  font-weight: 600;
-  background-color: transparent;
-  &:hover { background-color: rgba(0,0,0,0.06) !important; }
-}
+  color: #fff !important;
+  font-weight: 600 !important;
+  background-color: #f97316 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 6px 16px !important;
+  font-size: 14px !important;
+  transition: background-color 0.2s !important;
 
-.active-btn {
-  background-color: #e8f0fe !important;
-  color: #1967d2 !important;
-  opacity: 1 !important;
+  &:hover {
+    background-color: #ea6c0a !important;
+  }
+
+  &:disabled {
+    background-color: #dadce0 !important;
+    color: #9aa0a6 !important;
+    cursor: not-allowed !important;
+  }
 }

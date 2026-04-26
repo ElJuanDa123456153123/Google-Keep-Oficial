@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Note } from './model/note.model';
 import { ChecklistItem } from './checklist-item/model/checklist-item.model';
 import { CreateNoteDto, UpdateNoteDto } from './dto/note.dto';
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class NoteService {
@@ -79,6 +81,23 @@ export class NoteService {
   }
 
   async delete(id: number): Promise<void> {
+    const note = await this.noteRepo.findOne({ where: { id } });
+    
+    // Si tiene imagen, eliminar el archivo físico
+    if (note?.image_url) {
+      try {
+        const filename = note.image_url.split('/uploads/').pop();
+        if (filename) {
+          const filePath = join(process.cwd(), 'uploads', filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        }
+      } catch (err) {
+        console.error('Error deleting image file:', err);
+      }
+    }
+
     await this.noteRepo.update(id, { is_deleted: true });
   }
 

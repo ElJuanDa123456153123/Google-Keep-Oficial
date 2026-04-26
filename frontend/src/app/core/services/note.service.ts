@@ -66,4 +66,10 @@ export class NoteService {
   deleteChecklistByNoteId(noteId: number): Observable<void> {
     return this.api.delete<void>(`/checklist-item/delete-by-note/${noteId}`);
   }
+  
+  uploadImage(file: File): Observable<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.api.postFormData<{ url: string }>('/uploads/image', formData);
+  }
 }
