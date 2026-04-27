@@ -1,9 +1,10 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
 import { SearchService } from '../../../core/services';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-topbar',
@@ -16,10 +17,26 @@ export class TopbarComponent implements OnInit {
   @Output() sidebarToggle = new EventEmitter<void>();
 
   private _searchQuery: string = '';
+  public showProfileMenu: boolean = false;
+  public userProfile: any = null;
 
-  constructor(private searchService: SearchService) {}
+  constructor(
+    private searchService: SearchService,
+    private authService: AuthService
+  ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.userProfile = this.authService.getUserProfile();
+  }
+
+  // Cierra el menu si se da click afuera
+  @HostListener('document:click', ['$event'])
+  clickout(event: Event) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.profile-container')) {
+      this.showProfileMenu = false;
+    }
+  }
 
   get searchQuery(): string {
     return this._searchQuery;
@@ -27,7 +44,6 @@ export class TopbarComponent implements OnInit {
 
   set searchQuery(value: string) {
     this._searchQuery = value || '';
-    // Actualizar la búsqueda en tiempo real
     this.searchService.setSearchQuery(this._searchQuery);
   }
 
@@ -40,12 +56,25 @@ export class TopbarComponent implements OnInit {
   }
 
   onSearch() {
-    // La búsqueda ya se actualiza en tiempo real mediante el setter
     console.log('Searching:', this.searchQuery);
   }
 
   openSettings() {
-    // TODO: Implement settings
     console.log('Open settings');
+  }
+
+  toggleProfileMenu(event: Event) {
+    event.stopPropagation();
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    this.authService.logout();
+  }
+
+  get userInitials(): string {
+    if (!this.userProfile) return 'KD';
+    const name = this.userProfile.name || this.userProfile.email || 'Keep Dev';
+    return name.substring(0, 2).toUpperCase();
   }
 }

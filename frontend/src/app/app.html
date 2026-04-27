@@ -1,26 +1,33 @@
-<!-- Topbar -->
-<app-topbar (sidebarToggle)="onSidebarToggle()"></app-topbar>
+<!-- Si ESTAMOS autenticados, mostramos el tablero -->
+<ng-container *ngIf="(isAuthenticated$ | async); else guestTemplate">
+  <!-- Topbar -->
+  <app-topbar (sidebarToggle)="onSidebarToggle()"></app-topbar>
 
-<!-- Overlay para móvil (solo se muestra cuando sidebar está abierto) -->
-@if (sidebarOpen) {
-  <div class="app-overlay" (click)="sidebarOpen = false"></div>
-}
+  <!-- Overlay para móvil (solo se muestra cuando sidebar está abierto) -->
+  @if (sidebarOpen) {
+    <div class="app-overlay" (click)="sidebarOpen = false"></div>
+  }
 
-<!-- Sidebar -->
-<app-sidebar [isOpen]="sidebarOpen" (viewChange)="onViewChange($event)" (close)="sidebarOpen = false"></app-sidebar>
+  <!-- Sidebar -->
+  <app-sidebar [isOpen]="sidebarOpen" (viewChange)="onViewChange($event)" (close)="sidebarOpen = false"></app-sidebar>
 
-<!-- Main Content -->
-<app-notes-board></app-notes-board>
+  <!-- Main Content -->
+  <app-notes-board></app-notes-board>
 
-<!-- FAB -->
-<app-fab (click)="onFabClick()"></app-fab>
+  <!-- FAB -->
+  <app-fab (click)="onFabClick()"></app-fab>
 
-<!-- Note Modal -->
-@if (showNoteModal) {
-  <app-note-modal
-    (close)="onNoteModalClose()"
-    (noteCreated)="onNoteCreated()"
-  ></app-note-modal>
-}
+  <!-- Note Modal -->
+  @if (showNoteModal) {
+    <app-note-modal
+      (close)="onNoteModalClose()"
+      (noteCreated)="onNoteCreated()"
+    ></app-note-modal>
+  }
+</ng-container>
 
-<router-outlet />
+<!-- Si NO estamos autenticados, mostramos el router outlet donde se renderizará el Login / Auth Callback -->
+<ng-template #guestTemplate>
+  <router-outlet></router-outlet>
+</ng-template>
+

@@ -4,9 +4,13 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as fs from 'fs';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // 🔒 Activar cabeceras de seguridad HTTP básicas para prevenir XSS y Clickjacking
+  app.use(helmet());
 
   app.enableCors({
     origin: 'http://localhost:4200',

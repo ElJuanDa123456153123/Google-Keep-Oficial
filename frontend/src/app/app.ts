@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TopbarComponent } from './shared/components/topbar/topbar.component';
@@ -6,6 +6,7 @@ import { SidebarComponent } from './shared/components/sidebar/sidebar.component'
 import { NotesBoardComponent } from './shared/components/notes-board/notes-board.component';
 import { FabComponent } from './shared/components/fab/fab.component';
 import { NoteModalComponent } from './shared/components/note-modal/note-modal.component';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -21,12 +22,27 @@ import { NoteModalComponent } from './shared/components/note-modal/note-modal.co
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {
+export class App implements OnInit {
   title = 'Google Keep - Team Babilonicos';
   showNoteModal = false;
   sidebarOpen = false;
+  isAuthenticated$;
 
   @ViewChild(NotesBoardComponent) notesBoard!: NotesBoardComponent;
+
+  constructor(public authService: AuthService) {
+    this.isAuthenticated$ = this.authService.isAuthenticated$;
+  }
+
+  ngOnInit() {
+    this.isAuthenticated$.subscribe(isAuth => {
+      // Validamos manualmente si no estamos en /login ni /auth/callback
+      const currentUrl = window.location.pathname;
+      if (!isAuth && !currentUrl.includes('/login') && !currentUrl.includes('/auth/callback')) {
+         window.location.href = '/login';
+      }
+    });
+  }
 
   onFabClick() {
     this.showNoteModal = true;

@@ -23,6 +23,28 @@
   <div class="topbar-right">
     <button pButton icon="pi pi-th-large" class="p-button-text p-button-rounded" title="Vista"></button>
     <button pButton icon="pi pi-cog" class="p-button-text p-button-rounded" (click)="openSettings()" title="Configuración"></button>
-    <p-avatar label="JD" class="p-accent" size="normal" shape="circle"></p-avatar>
+    
+    <!-- Profile Container -->
+    <div class="profile-container" style="position: relative; margin-left: 8px; cursor: pointer;">
+      <p-avatar [label]="userInitials" class="p-accent" size="normal" shape="circle" (click)="toggleProfileMenu($event)"></p-avatar>
+
+      <!-- Dropdown Menu -->
+      <div class="profile-dropdown" *ngIf="showProfileMenu">
+        <div class="profile-header">
+          <p-avatar [label]="userInitials" class="p-accent" size="xlarge" shape="circle"></p-avatar>
+          <div class="profile-info">
+            <span class="profile-name">{{ userProfile?.name || 'Usuario' }}</span>
+            <span class="profile-email">{{ userProfile?.email || 'Sin correo' }}</span>
+          </div>
+        </div>
+        <div class="profile-divider"></div>
+        <div class="profile-actions">
+          <button class="logout-btn" (click)="logout()">
+            <i class="pi pi-sign-out"></i>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
