@@ -9,12 +9,19 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // 🔒 Activar cabeceras de seguridad HTTP básicas para prevenir XSS y Clickjacking
-  app.use(helmet());
+  // 🔒 Seguridad HTTP básica pero permitiendo cargar imágenes
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Desactivar CSP para evitar problemas con imágenes
+      crossOriginEmbedderPolicy: false, // Permitir cargar recursos de diferentes orígenes
+    })
+  );
 
   app.enableCors({
-    origin: 'http://localhost:4200',
+    origin: ['http://localhost:4200', 'http://localhost:3001'],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   app.setGlobalPrefix('api/v1');
@@ -29,9 +36,13 @@ async function bootstrap() {
     console.log('✅ Carpeta uploads ya existe:', uploadsDir);
   }
 
-  // Serve static files from uploads directory
+  // Serve static files from uploads directory con CORS headers
   app.useStaticAssets(uploadsDir, {
     prefix: '/uploads/',
+    setHeaders: (res) => {
+      res.set('Access-Control-Allow-Origin', 'http://localhost:4200');
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
   });
 
   app.useGlobalPipes(new ValidationPipe({

@@ -6,6 +6,8 @@ import { ChecklistItem } from './checklist-item/model/checklist-item.model';
 import { CreateNoteDto, UpdateNoteDto } from './dto/note.dto';
 import * as fs from 'fs';
 import { join } from 'path';
+import { Label } from '../label/model/label.model';
+import { LabelService } from '../label/label.service';
 
 @Injectable()
 export class NoteService {
@@ -13,25 +15,37 @@ export class NoteService {
     @InjectRepository(Note)
     private readonly noteRepo: Repository<Note>,
     @InjectRepository(ChecklistItem)
-    private readonly itemRepo: Repository<ChecklistItem>
+    private readonly itemRepo: Repository<ChecklistItem>,
+    private readonly labelService: LabelService
   ) {}
 
-  getAll(): Promise<Note[]> {
-    return this.noteRepo.find({
+  async getAll(): Promise<Note[]> {
+    const notes = await this.noteRepo.find({
       where: { is_deleted: false },
+      relations: ['checklist_items'],
       order: { is_pinned: 'DESC', created_at: 'DESC' }
     });
+    return this.addLabelsToNotes(notes);
   }
 
-  getById(id: number): Promise<Note> {
-    return this.noteRepo.findOne({ where: { id } }) as Promise<Note>;
+  async getById(id: number): Promise<Note> {
+    const note = await this.noteRepo.findOne({
+      where: { id },
+      relations: ['checklist_items']
+    }) as Note;
+    if (note) {
+      note.labels = await this.labelService.getLabelsByNoteId(id);
+    }
+    return note;
   }
 
-  getByUserId(userId: number): Promise<Note[]> {
-    return this.noteRepo.find({
+  async getByUserId(userId: number): Promise<Note[]> {
+    const notes = await this.noteRepo.find({
       where: { user_id: userId, is_deleted: false },
+      relations: ['checklist_items'],
       order: { is_pinned: 'DESC', created_at: 'DESC' }
     });
+    return this.addLabelsToNotes(notes);
   }
 
   async save(dto: CreateNoteDto): Promise<Note> {
@@ -52,7 +66,12 @@ export class NoteService {
       );
     }
 
-    return this.noteRepo.findOne({ where: { id: note.id } }) as Promise<Note>;
+    const savedNote = await this.noteRepo.findOne({
+      where: { id: note.id },
+      relations: ['checklist_items']
+    }) as Note;
+    savedNote.labels = [];
+    return savedNote;
   }
 
   async update(id: number, dto: UpdateNoteDto): Promise<Note> {
@@ -77,7 +96,12 @@ export class NoteService {
       }
     }
 
-    return this.noteRepo.findOne({ where: { id } }) as Promise<Note>;
+    const updatedNote = await this.noteRepo.findOne({
+      where: { id },
+      relations: ['checklist_items']
+    }) as Note;
+    updatedNote.labels = await this.labelService.getLabelsByNoteId(id);
+    return updatedNote;
   }
 
   async delete(id: number): Promise<void> {
@@ -104,25 +128,42 @@ export class NoteService {
   async togglePin(id: number): Promise<Note> {
     const note = await this.noteRepo.findOne({ where: { id } }) as Note;
     await this.noteRepo.update(id, { is_pinned: !note.is_pinned });
-    return this.noteRepo.findOne({ where: { id } }) as Promise<Note>;
+    const updatedNote = await this.noteRepo.findOne({
+      where: { id },
+      relations: ['checklist_items']
+    }) as Note;
+    updatedNote.labels = await this.labelService.getLabelsByNoteId(id);
+    return updatedNote;
   }
 
   async archive(id: number): Promise<Note> {
     const note = await this.noteRepo.findOne({ where: { id } }) as Note;
     await this.noteRepo.update(id, { is_archived: !note.is_archived });
-    return this.noteRepo.findOne({ where: { id } }) as Promise<Note>;
+    const updatedNote = await this.noteRepo.findOne({
+      where: { id },
+      relations: ['checklist_items']
+    }) as Note;
+    updatedNote.labels = await this.labelService.getLabelsByNoteId(id);
+    return updatedNote;
   }
 
-  getDeleted(): Promise<Note[]> {
-    return this.noteRepo.find({
+  async getDeleted(): Promise<Note[]> {
+    const notes = await this.noteRepo.find({
       where: { is_deleted: true },
+      relations: ['checklist_items'],
       order: { updated_at: 'DESC' }
     });
+    return this.addLabelsToNotes(notes);
   }
 
   async restore(id: number): Promise<Note> {
     await this.noteRepo.update(id, { is_deleted: false });
-    return this.noteRepo.findOne({ where: { id } }) as Promise<Note>;
+    const restoredNote = await this.noteRepo.findOne({
+      where: { id },
+      relations: ['checklist_items']
+    }) as Note;
+    restoredNote.labels = await this.labelService.getLabelsByNoteId(id);
+    return restoredNote;
   }
 
   async permanentDelete(id: number): Promise<void> {
@@ -144,5 +185,16 @@ export class NoteService {
 
     await this.itemRepo.delete({ note_id: id });
     await this.noteRepo.delete(id);
+  }
+
+  // Método privado para agregar etiquetas a un array de notas
+  private async addLabelsToNotes(notes: Note[]): Promise<Note[]> {
+    const notesWithLabels = await Promise.all(
+      notes.map(async (note) => {
+        note.labels = await this.labelService.getLabelsByNoteId(note.id);
+        return note;
+      })
+    );
+    return notesWithLabels;
   }
 }

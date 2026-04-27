@@ -25,6 +25,7 @@ export class NoteCardComponent implements OnInit, OnChanges {
   @Output() restore        = new EventEmitter<number>();
   @Output() permanentDelete = new EventEmitter<number>();
   @Output() toggleChecklist = new EventEmitter<{ noteId: number; itemId: number }>();
+  @Output() labelToggle    = new EventEmitter<Note>();  // ✅ NUEVO: edición rápida de etiquetas
 
   @HostBinding('class') get hostClasses(): string {
     const color        = this.note?.color              || 'default';
@@ -49,6 +50,12 @@ export class NoteCardComponent implements OnInit, OnChanges {
   onPinClick(event: Event) {
     event.stopPropagation();
     this.pin.emit(this.note.id);
+  }
+
+  // ✅ NUEVO: edición rápida de etiquetas
+  onLabelClick(event: Event) {
+    event.stopPropagation();
+    this.labelToggle.emit(this.note);
   }
 
   onToggleCheckItem(itemId: number) {

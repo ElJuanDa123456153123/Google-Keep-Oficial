@@ -126,6 +126,16 @@
       </div>
     </div>
 
+    <!-- ✅ NUEVO: sección de etiquetas -->
+    <div class="labels-section">
+      <app-label-selector
+        [selectedLabels]="noteLabels"
+        [userId]="currentUserId"
+        (labelsChange)="onLabelsChange($event)"
+        (labelCreated)="onNewLabelCreated($event)">
+      </app-label-selector>
+    </div>
+
     <!-- Toolbar -->
     <div class="modal-toolbar">
       <div class="toolbar-left">

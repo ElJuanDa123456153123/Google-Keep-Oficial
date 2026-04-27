@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn, UpdateDateColumn
 } from "typeorm";
 import { ChecklistItem } from "../checklist-item/model/checklist-item.model";
+import { Label } from "../../label/model/label.model";
 
 @Entity('notes')
 export class Note {
@@ -44,4 +45,8 @@ export class Note {
 
   @OneToMany(() => ChecklistItem, item => item.note, { cascade: true, eager: true })
   checklist_items!: ChecklistItem[];
+
+  // Propiedad virtual para incluir etiquetas cuando se obtienen notas
+  // No es una columna de la base de datos, se popula manualmente
+  labels?: Label[];
 }

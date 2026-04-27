@@ -8,11 +8,13 @@ import { ButtonModule } from 'primeng/button';
 import {
   trigger, style, transition, animate
 } from '@angular/animations';
-import { NoteService } from '../../../core/services';
-import { CreateNoteDto, Note, Collaborator } from '../../models';
+import { NoteService, LabelService } from '../../../core/services';
+import { CreateNoteDto, Note, Collaborator, Label } from '../../models';
 import { ReminderModalComponent } from '../reminder-modal/reminder-modal.component';
 // ✅ NUEVO: importar el modal de colaboradores
 import { CollaboratorModalComponent } from '../collaborator-modal/collaborator-modal.component';
+// ✅ NUEVO: importar el selector de etiquetas
+import { LabelSelectorComponent } from '../label-selector/label-selector.component';
 
 interface ChecklistItemLocal {
   content: string;
@@ -28,7 +30,8 @@ interface ChecklistItemLocal {
     FormsModule,
     ButtonModule,
     ReminderModalComponent,
-    CollaboratorModalComponent  // ✅ NUEVO
+    CollaboratorModalComponent,  // ✅ NUEVO
+    LabelSelectorComponent  // ✅ NUEVO: selector de etiquetas
   ],
   templateUrl: './note-modal.component.html',
   styleUrls: ['./note-modal.component.scss'],
@@ -74,6 +77,10 @@ export class NoteModalComponent implements OnInit {
 
   // ✅ NUEVO: colaboradores de la nota actual
   noteCollaborators: Collaborator[] = [];
+  // ✅ NUEVO: etiquetas de la nota actual
+  noteLabels: Label[] = [];
+  allLabels: Label[] = [];
+  currentUserId: number = 1; // TODO: Obtener desde AuthService
 
   colors = [
     { name: 'default',  class: 'note-bg-default'  },
@@ -100,10 +107,14 @@ export class NoteModalComponent implements OnInit {
 
   constructor(
     private noteService: NoteService,
+    private labelService: LabelService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
+    // ✅ NUEVO: cargar todas las etiquetas del usuario
+    this.loadLabels();
+
     if (this.editNote) {
       this.isEditMode = true;
       this.noteData = {
@@ -134,6 +145,11 @@ export class NoteModalComponent implements OnInit {
       // ✅ NUEVO: cargar colaboradores existentes de la nota
       if (this.editNote.collaborators?.length) {
         this.noteCollaborators = [...this.editNote.collaborators];
+      }
+
+      // ✅ NUEVO: cargar etiquetas existentes de la nota
+      if (this.editNote.labels?.length) {
+        this.noteLabels = [...this.editNote.labels];
       }
     }
   }
@@ -203,8 +219,12 @@ export class NoteModalComponent implements OnInit {
     if (this.isEditMode && this.editNote) {
       console.log('✏️ Modo edición - ID:', this.editNote.id);
       this.noteService.update(this.editNote.id, noteToSave).subscribe({
-        next: (response) => {
+        next: async (response) => {
           console.log('✅ Nota actualizada:', response);
+
+          // ✅ NUEVO: sincronizar etiquetas
+          await this.syncNoteLabels(this.editNote!.id);
+
           this.isCreating = false;
 
           // ✅ Primero emitir noteCreated para recargar
@@ -226,8 +246,12 @@ export class NoteModalComponent implements OnInit {
     } else {
       console.log('➕ Modo creación - Nueva nota');
       this.noteService.create(noteToSave).subscribe({
-        next: (response) => {
+        next: async (response) => {
           console.log('✅ Nota creada:', response);
+
+          // ✅ NUEVO: asignar etiquetas a la nueva nota
+          await this.syncNoteLabels(response.id);
+
           this.isCreating = false;
 
           // ✅ Emitir close primero para cerrar el modal
@@ -391,6 +415,53 @@ export class NoteModalComponent implements OnInit {
     return name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase();
   }
 
+  // ✅ NUEVO: métodos para gestión de etiquetas
+  loadLabels(): void {
+    this.labelService.getByUserId(this.currentUserId).subscribe({
+      next: (labels) => {
+        this.allLabels = labels;
+      },
+      error: (error) => {
+        console.error('Error loading labels:', error);
+      }
+    });
+  }
+
+  onLabelsChange(labels: Label[]): void {
+    this.noteLabels = labels;
+  }
+
+  onNewLabelCreated(label: Label): void {
+    console.log('New label created:', label);
+  }
+
+  private async syncNoteLabels(noteId: number): Promise<void> {
+    const currentLabelIds = this.noteLabels.map(l => l.id);
+    const previousLabelIds = this.editNote?.labels?.map(l => l.id) || [];
+
+    // Etiquetas a agregar
+    const toAdd = currentLabelIds.filter(id => !previousLabelIds.includes(id));
+    // Etiquetas a quitar
+    const toRemove = previousLabelIds.filter(id => !currentLabelIds.includes(id));
+
+    try {
+      // Agregar nuevas etiquetas
+      const addPromises = toAdd.map(labelId =>
+        this.labelService.addToNote({ note_id: noteId, label_id: labelId }).toPromise()
+      );
+
+      // Quitar etiquetas eliminadas
+      const removePromises = toRemove.map(labelId =>
+        this.labelService.removeFromNote(noteId, labelId).toPromise()
+      );
+
+      await Promise.all([...addPromises, ...removePromises]);
+      console.log('Labels synced successfully');
+    } catch (error) {
+      console.error('Error syncing labels:', error);
+    }
+  }
+
   private resetForm() {
     this.noteData = { title: '', content: '', color: 'default', is_pinned: false };
     this.checklistItems    = [];
@@ -403,5 +474,6 @@ export class NoteModalComponent implements OnInit {
     this.imagePreview      = null;
     this.selectedFile      = null;
     this.noteCollaborators = [];  // ✅ NUEVO
+    this.noteLabels        = [];  // ✅ NUEVO
   }
 }

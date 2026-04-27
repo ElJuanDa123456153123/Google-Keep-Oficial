@@ -92,6 +92,36 @@
   i { font-size: 16px; }
 }
 
+/* ✅ NUEVO: Label button ───────────────────────────── */
+.label-btn {
+  position: absolute;
+  top: 6px;
+  right: 70px; // Posicionado después del pin icon
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  z-index: 2;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: #5f6368;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.1);
+    svg { color: #202124; }
+  }
+}
+
 /* ── Trash actions buttons ────────────────────────── */
 .trash-actions {
   position: absolute;
@@ -247,6 +277,45 @@
   50% {
     transform: scale(1.15);
     opacity: 0.8;
+  }
+}
+
+/* ✅ NUEVO: Labels ─────────────────────────────────── */
+.note-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+
+  .label-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background-color: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    font-size: 13px;
+    color: #5f6368;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.12);
+    }
+
+    .label-icon {
+      width: 14px;
+      height: 14px;
+      background-color: #5f6368;
+      border-radius: 2px;
+      flex-shrink: 0;
+      mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg>') no-repeat center;
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg>') no-repeat center;
+    }
+
+    .label-name {
+      font-weight: 500;
+    }
   }
 }
 
