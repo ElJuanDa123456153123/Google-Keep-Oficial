@@ -40,10 +40,15 @@ export class AuthController {
     @Get('google/callback')
     @UseGuards(GoogleOauthGuard)
     async googleAuthRedirect(@Req() req: any, @Res() res: any) {
-        const loginData: any = await this.authService.googleLogin(req);
-        
         // Obtenemos la URL de frontend
         const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:4200';
+
+        if (!req.user) {
+            // Manejar caso donde el usuario cancela o falla la autenticación
+            return res.redirect(`${frontendUrl}/login?error=access_denied`);
+        }
+
+        const loginData: any = await this.authService.googleLogin(req);
         
         // Redirigimos al frontend pasándole el JWT en la URL u otros medios.
         // Mejor práctica: redirigir a una página limpia que atrape el token.
